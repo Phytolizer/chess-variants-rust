@@ -57,15 +57,25 @@ fn main() -> Result<(), String> {
     render_texture(&mut test_texture, &mut canvas)?;
 
     let mut event_pump = sdl.event_pump()?;
+
+    let chess_game: chess::Chess = chess::Chess::new();
+    let squares_horz: u32 = 8;
+    let squares_vert: u32 = 8;
+    let (width, height) = canvas.window().size();
+    chess_game.update_grid(squares_horz, squares_vert, width, height);
+
     'run: loop {
         for e in event_pump.poll_iter() {
             match e {
                 Quit { .. } => break 'run,
-                RenderTargetsReset { .. } => render_texture(&mut test_texture, &mut canvas)?,
+                RenderTargetsReset { .. } => {
+                    render_texture(&mut test_texture, &mut canvas)?;
+                    let (width, height) = canvas.window().size();
+                    chess_game.update_grid(squares_horz, squares_vert, width, height);
+                }
                 _ => {}
             }
         }
-
         let (width, height) = canvas.window().size();
 
         canvas.set_draw_color(Color::WHITE);
