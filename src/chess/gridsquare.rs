@@ -1,8 +1,8 @@
 #[derive(Debug)]
 pub struct GridSquare {
-    pos_horz: u32,
-    pos_vert: u32,
-    square_size: f32,
+    pub pos_horz: u32,
+    pub pos_vert: u32,
+    pub square_size: f32,
 }
 
 impl GridSquare {
@@ -13,10 +13,4 @@ impl GridSquare {
             square_size: size as f32,
         }
     }
-
-    pub fn showThing(&self) {
-        dbg!(self);
-    }
-
-    pub fn changeThing(&mut self) {}
 }

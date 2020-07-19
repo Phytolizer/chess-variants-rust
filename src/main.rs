@@ -3,33 +3,25 @@
 use sdl2::event::Event::Quit;
 use sdl2::event::Event::RenderTargetsReset;
 use sdl2::pixels::Color;
-use sdl2::{
-    rect::Rect,
-    render::{Canvas, Texture},
-    video::Window,
-};
+use sdl2::rect::Rect;
+use sdl2::render::Canvas;
+use sdl2::render::Texture;
+use sdl2::video::Window;
+use sdl2::video::WindowContext;
+
+use std::error::Error;
 
 mod chess;
 
-fn e_to_string<E>(e: E) -> String
-where
-    E: ToString,
-{
-    e.to_string()
-}
-
-fn render_texture(t: &mut Texture, canvas: &mut Canvas<Window>) -> Result<(), String> {
-    canvas
-        .with_texture_canvas(t, |c| {
-            c.set_draw_color(Color::RED);
-            c.clear();
-        })
-        .map_err(e_to_string)?;
-
+fn render_texture(t: &mut Texture, canvas: &mut Canvas<Window>) -> Result<(), Box<dyn Error>> {
+    canvas.with_texture_canvas(t, |c| {
+        c.set_draw_color(Color::RED);
+        c.clear();
+    })?;
     Ok(())
 }
 
-fn main() -> Result<(), String> {
+fn main() -> Result<(), Box<dyn Error>> {
     let sdl = sdl2::init()?;
     let sdl_video = sdl.video()?;
     let window = sdl_video
@@ -37,32 +29,29 @@ fn main() -> Result<(), String> {
         .position_centered()
         .vulkan()
         .resizable()
-        .build()
-        .map_err(e_to_string)?;
+        .build()?;
 
     let mut canvas = window
         .into_canvas()
         .accelerated()
         .present_vsync()
         .target_texture()
-        .build()
-        .map_err(e_to_string)?;
+        .build()?;
 
     let texture_creator = canvas.texture_creator();
 
-    let mut test_texture = texture_creator
-        .create_texture_target(None, 100, 100)
-        .map_err(e_to_string)?;
+    let mut test_texture = texture_creator.create_texture_target(None, 100, 100)?;
 
     render_texture(&mut test_texture, &mut canvas)?;
 
     let mut event_pump = sdl.event_pump()?;
 
-    let chess_game: chess::Chess = chess::Chess::new();
     let squares_horz: u32 = 8;
     let squares_vert: u32 = 8;
-    let (width, height) = canvas.window().size();
-    chess_game.update_grid(squares_horz, squares_vert, width, height);
+    let (mut width, mut height) = canvas.window().size();
+    let mut chess_game: chess::Chess<WindowContext> =
+        chess::Chess::new(&texture_creator, width, height)?;
+    chess_game.update_grid(squares_horz, squares_vert, width, height, &mut canvas)?;
 
     'run: loop {
         for e in event_pump.poll_iter() {
@@ -70,17 +59,24 @@ fn main() -> Result<(), String> {
                 Quit { .. } => break 'run,
                 RenderTargetsReset { .. } => {
                     render_texture(&mut test_texture, &mut canvas)?;
-                    let (width, height) = canvas.window().size();
-                    chess_game.update_grid(squares_horz, squares_vert, width, height);
+                    let new_width_height = canvas.window().size();
+                    width = new_width_height.0;
+                    height = new_width_height.1;
+                    chess_game.update_grid(
+                        squares_horz,
+                        squares_vert,
+                        width,
+                        height,
+                        &mut canvas,
+                    )?;
                 }
                 _ => {}
             }
         }
-        let (width, height) = canvas.window().size();
 
         canvas.set_draw_color(Color::WHITE);
         canvas.clear();
-        canvas.copy(&test_texture, None, Rect::new(0, 0, width / 2, height / 2))?;
+        canvas.copy(&chess_game.grid.texture, None, Rect::new(0, 0, 400, 400))?;
         canvas.present();
     }
 

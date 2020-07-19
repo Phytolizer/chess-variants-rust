@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 #[derive(Debug)]
 pub struct Piece {
     // pub position: Position,
@@ -8,14 +9,12 @@ impl Piece {
         Piece {}
     }
 
-    pub fn showThing(&self) {
+    pub fn show_thing(&self) {
         dbg!(self);
     }
-
-    pub fn changeThing(&mut self) {}
 }
 
 fn test() {
     let p = Piece::new();
-    p.showThing();
+    p.show_thing();
 }
