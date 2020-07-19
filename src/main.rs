@@ -74,9 +74,18 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
 
-        canvas.set_draw_color(Color::WHITE);
+        canvas.set_draw_color(Color::RGB(0x20, 0x20, 0x20));
         canvas.clear();
-        canvas.copy(&chess_game.grid.texture, None, Rect::new(0, 0, 400, 400))?;
+        canvas.copy(
+            &chess_game.grid.texture,
+            None,
+            Rect::new(
+                chess_game.grid.off_horz,
+                chess_game.grid.off_vert,
+                chess_game.grid.size_horz,
+                chess_game.grid.size_vert,
+            ),
+        )?;
         canvas.present();
     }
 

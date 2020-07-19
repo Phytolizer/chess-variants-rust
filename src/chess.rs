@@ -23,8 +23,8 @@ pub struct ChessGrid<'tc, T> {
     texture_creator: &'tc TextureCreator<T>,
     pub size_horz: u32,
     pub size_vert: u32,
-    pub off_horz: u32,
-    pub off_vert: u32,
+    pub off_horz: i32,
+    pub off_vert: i32,
 }
 
 impl<'tc, T> ChessGrid<'tc, T> {
@@ -61,20 +61,20 @@ impl<'tc, T> ChessGrid<'tc, T> {
     {
         let grid = &self.grid;
 
-        //self.size_horz = size_h;
-        //self.size_vert = size_v;
-        //self.off_horz = (width - size_h) / 2;
-        //self.off_vert = (height - size_v) / 2;
+        self.size_horz = size_h;
+        self.size_vert = size_v;
+        self.off_horz = ((width - size_h) / 2) as i32;
+        self.off_vert = ((height - size_v) / 2) as i32;
 
         self.texture =
             self.texture_creator
-                .create_texture(None, TextureAccess::Target, width, height)?;
+                .create_texture(None, TextureAccess::Target, size_h, size_v)?;
 
         canvas.with_texture_canvas(&mut self.texture, |canvas: &mut Canvas<RT>| {
-            canvas.set_draw_color(Color::RGB(0x77, 0x77, 0x77));
+            canvas.set_draw_color(Color::RGB(0x80, 0x80, 0x80));
             canvas.clear();
-            canvas.set_draw_color(Color::RGB(0x33, 0x33, 0x33));
-            for (i, square) in grid.iter().enumerate() {
+            canvas.set_draw_color(Color::RGB(0x40, 0x40, 0x40));
+            for square in grid {
                 if square.pos_horz % 2 == square.pos_vert % 2 {
                     canvas
                         .fill_rect(Rect::new(
@@ -120,7 +120,7 @@ impl<'tc, T> Chess<'tc, T> {
     {
         println!("Method entry update_grid");
         let squares_size: u32;
-        if width / squares_horz > height / squares_vert {
+        if width / squares_horz < height / squares_vert {
             squares_size = width / squares_horz;
         } else {
             squares_size = height / squares_vert;
