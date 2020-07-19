@@ -46,12 +46,18 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut event_pump = sdl.event_pump()?;
 
-    let squares_horz: u32 = 8;
-    let squares_vert: u32 = 8;
-    let (mut width, mut height) = canvas.window().size();
-    let mut chess_game: chess::Chess<WindowContext> =
-        chess::Chess::new(&texture_creator, width, height)?;
-    chess_game.update_grid(squares_horz, squares_vert, width, height, &mut canvas)?;
+    let mut chess_game: chess::Chess<WindowContext> = chess::Chess::new(
+        &texture_creator,
+        canvas.window().size().0,
+        canvas.window().size().1,
+    )?;
+    chess_game.grid.redraw(
+        canvas.window().size().0,
+        canvas.window().size().1,
+        chess_game.settings.squares_horz,
+        chess_game.settings.squares_vert,
+        &mut canvas,
+    )?;
 
     'run: loop {
         for e in event_pump.poll_iter() {
@@ -59,14 +65,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                 Quit { .. } => break 'run,
                 RenderTargetsReset { .. } => {
                     render_texture(&mut test_texture, &mut canvas)?;
-                    let new_width_height = canvas.window().size();
-                    width = new_width_height.0;
-                    height = new_width_height.1;
-                    chess_game.update_grid(
-                        squares_horz,
-                        squares_vert,
-                        width,
-                        height,
+                    chess_game.grid.redraw(
+                        canvas.window().size().0,
+                        canvas.window().size().1,
+                        chess_game.settings.squares_horz,
+                        chess_game.settings.squares_vert,
                         &mut canvas,
                     )?;
                 }
