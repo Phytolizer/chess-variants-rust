@@ -1,5 +1,8 @@
 mod piece;
+use piece::Piece;
+
 mod piece_factory;
+use piece_factory::Factory;
 
 use std::error::Error;
 
@@ -19,7 +22,7 @@ pub enum GameType {
 
 pub struct Chess<'tc, T> {
     pub settings: ChessSettings,
-    pub pieces: Vec<piece::Piece>,
+    pub pieces: Vec<Piece>,
     pub grid: ChessGrid<'tc, T>,
     pub player_turn: u32,
     pub selected_piece: u32,
@@ -31,7 +34,7 @@ pub struct ChessSettings {
     pub squares_size: u32,
     pub starting_rows: u32,
     pub game_teams: u32,
-    pub factory: piece_factory::Factory,
+    pub factory: Factory,
 }
 pub struct ChessGrid<'tc, T> {
     pub texture: Texture<'tc>,
@@ -71,7 +74,7 @@ impl<'tc, T> Chess<'tc, T> {
 }
 
 pub fn generate_classic(settings: &mut ChessSettings) {}
-pub fn generate_random(settings: &mut ChessSettings) -> Vec<piece::Piece> {
+pub fn generate_random(settings: &mut ChessSettings) -> Vec<Piece> {
     let new_pieces = vec![];
     /*for row in 0..settings.starting_rows {
         for col in 0..settings.squares_horz {
@@ -93,7 +96,7 @@ impl ChessSettings {
             squares_size: 0,
             starting_rows: 2,
             game_teams: 2,
-            factory: piece_factory::Factory::new(),
+            factory: Factory::new(),
         }
     }
 }
