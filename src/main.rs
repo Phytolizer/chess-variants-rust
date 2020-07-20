@@ -54,8 +54,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     chess_game.grid.redraw(
         canvas.window().size().0,
         canvas.window().size().1,
-        chess_game.settings.squares_horz,
-        chess_game.settings.squares_vert,
+        &mut chess_game.settings,
         &mut canvas,
     )?;
 
@@ -68,8 +67,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     chess_game.grid.redraw(
                         canvas.window().size().0,
                         canvas.window().size().1,
-                        chess_game.settings.squares_horz,
-                        chess_game.settings.squares_vert,
+                        &mut chess_game.settings,
                         &mut canvas,
                     )?;
                 }

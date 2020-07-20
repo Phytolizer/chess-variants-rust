@@ -8,6 +8,7 @@ edition = "2018"
 [dependencies]
 serde = "*"
 bincode = "*"
+rand = "*"
 
 [dependencies.sdl2]
 version = "*"
