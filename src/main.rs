@@ -12,6 +12,7 @@ use sdl2::video::WindowContext;
 use std::error::Error;
 
 mod chess;
+mod gfx;
 
 fn render_texture(t: &mut Texture, canvas: &mut Canvas<Window>) -> Result<(), Box<dyn Error>> {
     canvas.with_texture_canvas(t, |c| {
