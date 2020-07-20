@@ -1,5 +1,5 @@
 mod piece;
-mod piecefactory;
+mod piece_factory;
 
 use std::error::Error;
 
