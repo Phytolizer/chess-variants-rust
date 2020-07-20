@@ -31,7 +31,7 @@ pub struct ChessSettings {
     pub squares_size: u32,
     pub starting_rows: u32,
     pub game_teams: u32,
-    pub factory: piecefactory::Factory,
+    pub factory: piece_factory::Factory,
 }
 pub struct ChessGrid<'tc, T> {
     pub texture: Texture<'tc>,
@@ -93,7 +93,7 @@ impl ChessSettings {
             squares_size: 0,
             starting_rows: 2,
             game_teams: 2,
-            factory: piecefactory::Factory::new(),
+            factory: piece_factory::Factory::new(),
         }
     }
 }
