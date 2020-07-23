@@ -11,10 +11,6 @@ use sdl2::video::WindowContext;
 
 use std::error::Error;
 use std::fs;
-use std::io;
-use std::io::BufRead;
-use std::io::BufReader;
-use std::{io::Read, path::Path};
 
 mod chess;
 mod gfx;
