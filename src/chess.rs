@@ -1,8 +1,9 @@
 mod piece;
 use piece::Piece;
 
-mod piece_factory;
+pub mod piece_factory;
 use piece_factory::Factory;
+use piece_factory::PieceFactory;
 
 use std::error::Error;
 

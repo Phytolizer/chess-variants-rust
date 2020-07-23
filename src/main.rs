@@ -10,6 +10,11 @@ use sdl2::video::Window;
 use sdl2::video::WindowContext;
 
 use std::error::Error;
+use std::fs;
+use std::io;
+use std::io::BufRead;
+use std::io::BufReader;
+use std::{io::Read, path::Path};
 
 mod chess;
 mod gfx;
@@ -20,6 +25,42 @@ fn render_texture(t: &mut Texture, canvas: &mut Canvas<Window>) -> Result<(), Bo
         c.clear();
     })?;
     Ok(())
+}
+
+fn file_to_string<P: AsRef<Path>>(file_name: P) -> io::Result<String> {
+    let mut f = fs::File::open(file_name)?;
+    let mut contents = String::new();
+    f.read_to_string(&mut contents)?;
+    Ok(contents)
+}
+
+fn file_to_lines<P: AsRef<Path>>(file_name: P) -> io::Result<Vec<String>> {
+    let f = fs::File::open(file_name)?;
+    let reader = BufReader::new(f);
+    let mut err: io::Result<()> = Ok(());
+    let contents: Vec<String> = reader
+        .lines()
+        .map(|l| match l {
+            Ok(l) => l.to_owned(),
+            Err(e) => {
+                err = Err(e);
+                String::new()
+            }
+        })
+        .collect();
+    err?;
+    Ok(contents)
+}
+
+fn read_files() -> Result<(), Box<dyn Error>> {
+    let dir = fs::read_dir("./chess/pieces")?;
+    for file in dir {
+        let file = file?;
+        if file.file_type()?.is_file() {
+            for line in file_to_lines(file.path())? {}
+        }
+    }
+    return Ok(());
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
