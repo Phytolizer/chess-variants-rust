@@ -27,37 +27,19 @@ fn render_texture(t: &mut Texture, canvas: &mut Canvas<Window>) -> Result<(), Bo
     Ok(())
 }
 
-fn file_to_string<P: AsRef<Path>>(file_name: P) -> io::Result<String> {
-    let mut f = fs::File::open(file_name)?;
-    let mut contents = String::new();
-    f.read_to_string(&mut contents)?;
-    Ok(contents)
-}
-
-fn file_to_lines<P: AsRef<Path>>(file_name: P) -> io::Result<Vec<String>> {
-    let f = fs::File::open(file_name)?;
-    let reader = BufReader::new(f);
-    let mut err: io::Result<()> = Ok(());
-    let contents: Vec<String> = reader
-        .lines()
-        .map(|l| match l {
-            Ok(l) => l.to_owned(),
-            Err(e) => {
-                err = Err(e);
-                String::new()
-            }
-        })
-        .collect();
-    err?;
-    Ok(contents)
-}
-
-fn read_files() -> Result<(), Box<dyn Error>> {
-    let dir = fs::read_dir("./chess/pieces")?;
+fn generate_piece_factory_files(
+    path: String,
+    settings: &mut chess::ChessSettings,
+) -> Result<(), Box<dyn Error>> {
+    let dir = fs::read_dir(path)?;
+    settings.factory.factory.clear();
     for file in dir {
         let file = file?;
         if file.file_type()?.is_file() {
-            for line in file_to_lines(file.path())? {}
+            settings
+                .factory
+                .factory
+                .push(chess::piece_factory::new_piece_factory(file)?);
         }
     }
     return Ok(());
@@ -99,6 +81,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         &mut chess_game.settings,
         &mut canvas,
     )?;
+    generate_piece_factory_files("./chess_pieces".to_string(), &mut chess_game.settings)?;
 
     'run: loop {
         for e in event_pump.poll_iter() {

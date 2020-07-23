@@ -1,3 +1,4 @@
+start_name
 Bishop
 
 start_moves
@@ -9,7 +10,6 @@ start_moves
 -2 -1 1
 1 -2 1
 -1 -2 1
-end_moves
 
 start_image
 0 0 0 0 1 0 1 0 0 0 0 0 0 0 0 0
@@ -28,4 +28,3 @@ start_image
 0 0 1 1 1 1 1 1 1 1 1 1 1 1 0 0
 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 0
 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 0
-end_image
