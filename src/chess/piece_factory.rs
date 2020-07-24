@@ -3,8 +3,8 @@ use super::piece::Piece;
 use rand::seq::SliceRandom;
 
 #[derive(Debug)]
-pub struct Factory {
-    pub factory: Vec<PieceFactory>,
+pub struct PieceFactoryCollection {
+    pub piece_factories: Vec<PieceFactory>,
 }
 
 #[derive(Debug)]
@@ -13,9 +13,11 @@ pub struct PieceFactory {
     pub piece_movement: Vec<Vec<i32>>,
 }
 
-impl Factory {
-    pub fn new() -> Factory {
-        Factory { factory: vec![] }
+impl PieceFactoryCollection {
+    pub fn new() -> PieceFactoryCollection {
+        PieceFactoryCollection {
+            piece_factories: vec![],
+        }
     }
 
     pub fn build_piece(
@@ -27,7 +29,10 @@ impl Factory {
     ) -> Piece {
         match piece_type {
             _ => {
-                let piece_factory = self.factory.choose_mut(&mut rand::thread_rng()).unwrap();
+                let piece_factory = self
+                    .piece_factories
+                    .choose_mut(&mut rand::thread_rng())
+                    .unwrap();
                 let piece = piece_factory.build(team, pos_horz, pos_vert);
                 return piece;
             }

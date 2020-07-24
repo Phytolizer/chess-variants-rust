@@ -2,7 +2,7 @@ mod piece;
 use piece::Piece;
 
 pub mod piece_factory;
-use piece_factory::Factory;
+use piece_factory::PieceFactoryCollection;
 
 use std::error::Error;
 
@@ -34,7 +34,7 @@ pub struct ChessSettings {
     pub squares_size: u32,
     pub starting_rows: u32,
     pub game_teams: u32,
-    pub factory: Factory,
+    pub collection: PieceFactoryCollection,
 }
 pub struct ChessGrid<'tc, T> {
     pub texture: Texture<'tc>,
@@ -96,7 +96,7 @@ impl ChessSettings {
             squares_size: 0,
             starting_rows: 2,
             game_teams: 2,
-            factory: Factory::new(),
+            collection: PieceFactoryCollection::new(),
         }
     }
 }

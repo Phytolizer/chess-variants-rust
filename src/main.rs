@@ -28,12 +28,12 @@ fn generate_piece_factory_files(
     settings: &mut chess::ChessSettings,
 ) -> Result<(), Box<dyn Error>> {
     let dir = fs::read_dir(path)?;
-    settings.factory.factory.clear();
+    settings.collection.factory.clear();
     for file in dir {
         let file = file?;
         if file.file_type()?.is_file() {
             settings
-                .factory
+                .collection
                 .factory
                 .push(chess::piece_factory::new_piece_factory(file)?);
         }
