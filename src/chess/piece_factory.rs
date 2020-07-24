@@ -4,13 +4,15 @@ use super::piece::Piece;
 pub struct PieceFactory {
     pub piece_name: String,
     pub piece_movement: Vec<Vec<i32>>,
+    pub piece_image: Vec<Vec<bool>>,
 }
 
 impl PieceFactory {
-    pub fn new(name: String, movement: Vec<Vec<i32>>) -> PieceFactory {
+    pub fn new(name: String, movement: Vec<Vec<i32>>, image: Vec<Vec<bool>>) -> PieceFactory {
         PieceFactory {
             piece_name: name,
             piece_movement: movement,
+            piece_image: image,
         }
     }
 
@@ -42,7 +44,7 @@ fn file_to_lines<P: AsRef<std::path::Path>>(file_name: P) -> std::io::Result<Vec
 pub fn new_piece_factory(
     file: std::fs::DirEntry,
 ) -> Result<PieceFactory, Box<dyn std::error::Error>> {
-    let mut piece_factory: PieceFactory = PieceFactory::new("name".to_string(), vec![]);
+    let mut piece_factory: PieceFactory = PieceFactory::new("name".to_string(), vec![], vec![]);
     let mut mode: String = "".to_string();
     for line in file_to_lines(file.path())? {
         if line == "" {
@@ -69,5 +71,7 @@ pub fn new_piece_factory(
         if mode == "image" {}
     }
     piece_factory.piece_movement.push(vec![0, 1, 1]);
+    piece_factory.piece_image.push(vec![true, false]);
+    piece_factory.piece_image.push(vec![false, true]);
     return Ok(piece_factory);
 }

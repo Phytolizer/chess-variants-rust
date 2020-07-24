@@ -1,5 +1,3 @@
-use super::ChessSettings;
-
 #[derive(Debug)]
 pub struct Piece {
     pub team_number: u32,
@@ -20,5 +18,5 @@ impl Piece {
         }
     }
 
-    pub fn display(&mut self, settings: &mut ChessSettings) {}
+    pub fn display(&mut self) {}
 }

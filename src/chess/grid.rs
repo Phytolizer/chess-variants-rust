@@ -9,7 +9,7 @@ use sdl2::render::TextureAccess;
 use sdl2::render::TextureCreator;
 use sdl2::render::TextureValueError;
 
-pub struct ChessGrid<'tc, T> {
+pub struct Grid<'tc, T> {
     pub texture: Texture<'tc>,
     texture_creator: &'tc TextureCreator<T>,
     pub size_horz: u32,
@@ -18,17 +18,17 @@ pub struct ChessGrid<'tc, T> {
     pub off_vert: i32,
 }
 
-impl<'tc, T> ChessGrid<'tc, T> {
+impl<'tc, T> Grid<'tc, T> {
     pub fn new(
         texture_creator: &'tc TextureCreator<T>,
         width: u32,
         height: u32,
-    ) -> Result<ChessGrid<'tc, T>, TextureValueError>
+    ) -> Result<Grid<'tc, T>, TextureValueError>
     where
         T: 'tc,
     {
         let texture = texture_creator.create_texture(None, TextureAccess::Target, width, height)?;
-        Ok(ChessGrid {
+        Ok(Grid {
             texture,
             texture_creator,
             size_horz: 0,

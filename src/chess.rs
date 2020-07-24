@@ -1,4 +1,4 @@
-pub mod chess_grid;
+pub mod grid;
 pub mod piece;
 pub mod piece_factory;
 
@@ -10,7 +10,7 @@ pub enum GameType {
 pub struct Chess<'tc, T> {
     pub settings: ChessSettings,
     pub pieces: Vec<piece::Piece>,
-    pub grid: chess_grid::ChessGrid<'tc, T>,
+    pub grid: grid::Grid<'tc, T>,
     pub player_turn: u32,
     pub selected_piece: u32,
 }
@@ -35,7 +35,7 @@ impl<'tc, T> Chess<'tc, T> {
     {
         Ok(Chess {
             settings: ChessSettings::new(),
-            grid: chess_grid::ChessGrid::new(texture_creator, width, height)?,
+            grid: grid::Grid::new(texture_creator, width, height)?,
             pieces: vec![],
             player_turn: 0,
             selected_piece: 0,
@@ -53,7 +53,7 @@ impl<'tc, T> Chess<'tc, T> {
 
     pub fn display_pieces(&mut self) {
         for index in 0..self.pieces.len() {
-            self.pieces[index].display(&mut self.settings);
+            self.pieces[index].display();
         }
     }
 }
