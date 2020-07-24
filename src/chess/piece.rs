@@ -17,8 +17,4 @@ impl Piece {
             has_crown: false,
         }
     }
-
-    pub fn show_thing(&self) {
-        dbg!(self);
-    }
 }

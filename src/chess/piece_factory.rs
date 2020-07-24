@@ -4,7 +4,7 @@ use rand::seq::SliceRandom;
 
 #[derive(Debug)]
 pub struct Factory {
-    pub factory: Vec<PieceFactory>,
+    pub piece_factory: Vec<PieceFactory>,
 }
 
 #[derive(Debug)]
@@ -15,7 +15,9 @@ pub struct PieceFactory {
 
 impl Factory {
     pub fn new() -> Factory {
-        Factory { factory: vec![] }
+        Factory {
+            piece_factory: vec![],
+        }
     }
 
     pub fn build_piece(
@@ -27,8 +29,11 @@ impl Factory {
     ) -> Piece {
         match piece_type {
             _ => {
-                let piece_factory = self.factory.choose_mut(&mut rand::thread_rng()).unwrap();
-                let piece = piece_factory.build(team, pos_horz, pos_vert);
+                let selected_piece_factory = self
+                    .piece_factory
+                    .choose_mut(&mut rand::thread_rng())
+                    .unwrap();
+                let piece = selected_piece_factory.build(team, pos_horz, pos_vert);
                 return piece;
             }
         }
@@ -90,10 +95,11 @@ pub fn new_piece_factory(
             piece_factory.piece_name = line.clone();
         }
         if mode == "move" {
-            let parts = line.split_whitespace().map(|l| l.parse::<i32>());
-            let movement: Result<Vec<i32>, _> = parts.collect();
+            //let parts = line.split_whitespace().map(|l| l.parse::<i32>());
+            //let movement: Result<Vec<i32>, _> = parts.collect();
             //let movement = movement?;
             //piece_factory.piece_movement.push(movement);
+            piece_factory.piece_movement.push(vec![0, 0, 0]);
         }
         if mode == "image" {}
     }

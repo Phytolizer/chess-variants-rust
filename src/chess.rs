@@ -16,7 +16,7 @@ use sdl2::render::TextureCreator;
 use sdl2::render::TextureValueError;
 
 pub enum GameType {
-    Classic,
+    //Classic,
     Random,
 }
 
@@ -66,31 +66,31 @@ impl<'tc, T> Chess<'tc, T> {
     pub fn generate_pieces(&mut self) {
         self.pieces.clear();
         match self.settings.game_type {
-            GameType::Classic => generate_classic(&mut self.settings),
+            //GameType::Classic => generate_classic(&mut self.settings),
             GameType::Random => self.pieces = generate_random(&mut self.settings),
-            _ => return,
+            //_ => return,
         }
     }
 }
 
-pub fn generate_classic(settings: &mut ChessSettings) {}
+//pub fn generate_classic(settings: &mut ChessSettings) {}
 pub fn generate_random(settings: &mut ChessSettings) -> Vec<Piece> {
     let new_pieces = vec![];
-    /*for row in 0..settings.starting_rows {
+    for row in 0..settings.starting_rows {
         for col in 0..settings.squares_horz {
             settings
                 .factory
                 .build_piece(0, "Rook", settings.squares_vert - row - 1, col);
             settings.factory.build_piece(1, "Rook", row, col);
         }
-    }*/
+    }
     return new_pieces;
 }
 
 impl ChessSettings {
     pub fn new() -> ChessSettings {
         ChessSettings {
-            game_type: GameType::Classic,
+            game_type: GameType::Random,
             squares_horz: 8,
             squares_vert: 8,
             squares_size: 0,

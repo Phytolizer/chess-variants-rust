@@ -19,10 +19,10 @@ pub trait Widgety {
 }
 
 impl Widget {
-    pub fn new(rect: Rect) -> Widget {
+    /*pub fn new(rect: Rect) -> Widget {
         Widget {
             rect,
             color: Color::BLACK,
         }
-    }
+    }*/
 }
