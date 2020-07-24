@@ -28,13 +28,12 @@ fn generate_piece_factory_files(
     settings: &mut chess::ChessSettings,
 ) -> Result<(), Box<dyn Error>> {
     let dir = fs::read_dir(path)?;
-    settings.factory.piece_factory.clear();
+    settings.factory.clear();
     for file in dir {
         let file = file?;
         if file.file_type()?.is_file() {
             settings
                 .factory
-                .piece_factory
                 .push(chess::piece_factory::new_piece_factory(file)?);
         }
     }
@@ -109,6 +108,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 chess_game.grid.size_vert,
             ),
         )?;
+        chess_game.display_pieces();
         canvas.present();
     }
 

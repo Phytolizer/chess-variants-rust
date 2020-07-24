@@ -1,43 +1,9 @@
 use super::piece::Piece;
 
-use rand::seq::SliceRandom;
-
-#[derive(Debug)]
-pub struct Factory {
-    pub piece_factory: Vec<PieceFactory>,
-}
-
 #[derive(Debug)]
 pub struct PieceFactory {
     pub piece_name: String,
     pub piece_movement: Vec<Vec<i32>>,
-}
-
-impl Factory {
-    pub fn new() -> Factory {
-        Factory {
-            piece_factory: vec![],
-        }
-    }
-
-    pub fn build_piece(
-        &mut self,
-        team: u32,
-        piece_type: &str,
-        pos_horz: u32,
-        pos_vert: u32,
-    ) -> Piece {
-        match piece_type {
-            _ => {
-                let selected_piece_factory = self
-                    .piece_factory
-                    .choose_mut(&mut rand::thread_rng())
-                    .unwrap();
-                let piece = selected_piece_factory.build(team, pos_horz, pos_vert);
-                return piece;
-            }
-        }
-    }
 }
 
 impl PieceFactory {
@@ -48,7 +14,7 @@ impl PieceFactory {
         }
     }
 
-    pub fn build(&mut self, team: u32, pos_horz: u32, pos_vert: u32) -> Piece {
+    pub fn build_piece(&mut self, team: u32, pos_horz: u32, pos_vert: u32) -> Piece {
         let new_piece: Piece = Piece::new(team, pos_horz, pos_vert);
         return new_piece;
     }
@@ -99,9 +65,9 @@ pub fn new_piece_factory(
             //let movement: Result<Vec<i32>, _> = parts.collect();
             //let movement = movement?;
             //piece_factory.piece_movement.push(movement);
-            piece_factory.piece_movement.push(vec![0, 0, 0]);
         }
         if mode == "image" {}
     }
+    piece_factory.piece_movement.push(vec![0, 1, 1]);
     return Ok(piece_factory);
 }
