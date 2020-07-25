@@ -2,26 +2,31 @@ pub mod grid;
 pub mod piece;
 pub mod piece_factory;
 
+pub use piece_factory::PieceFactory;
+
+use rand::Rng;
+use sdl2::render::{RenderTarget, Canvas};
+
 pub enum GameType {
     //Classic,
     Random,
 }
 
 pub struct Chess<'tc, T> {
-    pub settings: ChessSettings,
+    pub settings: ChessSettings<'tc>,
     pub pieces: Vec<piece::Piece>,
     pub grid: grid::Grid<'tc, T>,
     pub player_turn: u32,
     pub selected_piece: u32,
 }
-pub struct ChessSettings {
+pub struct ChessSettings<'tc> {
     pub game_type: GameType,
     pub squares_horz: u32,
     pub squares_vert: u32,
     pub squares_size: u32,
     pub starting_rows: u32,
     pub game_teams: u32,
-    pub factory: Vec<piece_factory::PieceFactory>,
+    pub factory: Vec<piece_factory::PieceFactory<'tc>>,
 }
 
 impl<'tc, T> Chess<'tc, T> {
@@ -51,14 +56,12 @@ impl<'tc, T> Chess<'tc, T> {
         }
     }
 
-    pub fn display_pieces(&mut self) {
+    pub fn display_pieces<RT>(&mut self, canvas: &mut Canvas<RT>) where RT: RenderTarget {
         for index in 0..self.pieces.len() {
-            self.pieces[index].display();
+            self.pieces[index].display(canvas);
         }
     }
 }
-
-use rand::Rng;
 
 //pub fn generate_classic(settings: &mut ChessSettings) {}
 pub fn generate_random(settings: &mut ChessSettings) -> Vec<piece::Piece> {
@@ -78,8 +81,8 @@ pub fn generate_random(settings: &mut ChessSettings) -> Vec<piece::Piece> {
     return new_pieces;
 }
 
-impl ChessSettings {
-    pub fn new() -> ChessSettings {
+impl<'tc> ChessSettings<'tc> {
+    pub fn new() -> ChessSettings<'tc> {
         ChessSettings {
             game_type: GameType::Random,
             squares_horz: 8,
