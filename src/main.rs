@@ -117,5 +117,5 @@ fn main() -> Result<(), Box<dyn Error>> {
         canvas.present();
     }
 
-    return Ok(());
+    Ok(())
 }
