@@ -24,3 +24,6 @@ jobs:
       run: cargo build --verbose
     - name: Run tests
       run: cargo test --verbose
+      env:
+        CODECOV_TOKEN: "e2bb94f3-00f6-48f9-b7f6-15f7da91abdb"
+    - run: "bash <(curl -s https://codecov.io/bash)"
