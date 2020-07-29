@@ -92,8 +92,8 @@ pub fn new_piece_factory(
         if mode == "move" {
             let parts = line.split_whitespace().map(|l| l.parse::<i32>());
             let movement: Result<Vec<i32>, _> = parts.collect();
-            //let movement = movement?;
-            //piece_factory.piece_movement.push(movement);
+            let movement = movement?;
+            // piece_factory.piece_movement.push(movement);
         }
         if mode == "image" {}
     }

@@ -1,9 +1,13 @@
 #![windows_subsystem = "windows"]
 
+use gfx::Button;
+use gfx::Widgety;
+
 use sdl2::event::Event::Quit;
 use sdl2::event::Event::RenderTargetsReset;
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
+use sdl2::render::BlendMode;
 use sdl2::render::Canvas;
 use sdl2::render::Texture;
 use sdl2::video::Window;
@@ -57,6 +61,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .present_vsync()
         .target_texture()
         .build()?;
+    canvas.set_blend_mode(BlendMode::Blend);
 
     let texture_creator = canvas.texture_creator();
 
@@ -79,6 +84,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     )?;
     generate_piece_factory_files("./chess_pieces".to_string(), &mut chess_game.settings)?;
 
+    let mut test_button = Button::new();
+    test_button
+        .with_text("Test button")
+        .with_click_action(|| {
+            println!("Hello World");
+            Ok(())
+        })
+        .position(100, 100)
+        .size(100, 100)
+        .color(Color::BLUE);
+    let mut test_button = test_button.build();
+
     'run: loop {
         for e in event_pump.poll_iter() {
             match e {
@@ -94,6 +111,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 }
                 _ => {}
             }
+            test_button.handle_event(e)?;
         }
 
         canvas.set_draw_color(Color::RGB(0x20, 0x20, 0x20));
@@ -108,6 +126,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 chess_game.grid.size_vert,
             ),
         )?;
+        test_button.draw(&mut canvas)?;
         canvas.present();
     }
 
