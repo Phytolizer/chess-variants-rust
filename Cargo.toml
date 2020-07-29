@@ -6,9 +6,9 @@ edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-serde = "*"
-bincode = "*"
-rand = "*"
+rand = "0.7"
+regex = "1.3"
+lazy_static = "1.4"
 
 [dependencies.sdl2]
 version = "*"

@@ -68,10 +68,10 @@ impl Widgety for Button {
                 if self.state == State::Pressed && mouse_btn == MouseButton::Left {
                     if self.widget.rect.contains_point((x, y)) {
                         self.state = State::Hovered;
+                        (self.on_click)()?;
                     } else {
                         self.state = State::Normal;
                     }
-                    (self.on_click)()?;
                 }
             }
             _ => {}

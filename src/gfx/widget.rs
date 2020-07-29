@@ -19,6 +19,7 @@ pub trait Widgety {
 }
 
 impl Widget {
+    #[allow(dead_code)]
     pub fn new(rect: Option<Rect>) -> Widget {
         Widget {
             rect: if let Some(rect) = rect {

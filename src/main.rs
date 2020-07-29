@@ -27,19 +27,19 @@ fn render_texture(t: &mut Texture, canvas: &mut Canvas<Window>) -> Result<(), Bo
     Ok(())
 }
 
-fn generate_piece_factory_files(
+fn generate_piece_factory_from_files<'tc>(
     path: String,
-    settings: &mut chess::ChessSettings,
+    settings: &mut chess::ChessSettings<'tc>,
+    canvas: &mut Canvas<Window>,
 ) -> Result<(), Box<dyn Error>> {
     let dir = fs::read_dir(path)?;
-    settings.factory.factory.clear();
+    settings.factory.clear();
     for file in dir {
         let file = file?;
-        if file.file_type()?.is_file() {
+        if file.file_type()?.is_file() && file.file_name().to_string_lossy().ends_with(".txt") {
             settings
                 .factory
-                .factory
-                .push(chess::piece_factory::new_piece_factory(file)?);
+                .push(chess::PieceFactory::new(file, canvas.texture_creator())?);
         }
     }
     return Ok(());
@@ -82,7 +82,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         &mut chess_game.settings,
         &mut canvas,
     )?;
-    generate_piece_factory_files("./chess_pieces".to_string(), &mut chess_game.settings)?;
+    generate_piece_factory_from_files(
+        "./chess_pieces".to_string(),
+        &mut chess_game.settings,
+        &mut canvas,
+    )?;
+    chess_game.generate_pieces();
 
     let mut test_button = Button::new();
     test_button
@@ -126,7 +131,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 chess_game.grid.size_vert,
             ),
         )?;
-        test_button.draw(&mut canvas)?;
+        chess_game.display_pieces(&mut canvas);
         canvas.present();
     }
 

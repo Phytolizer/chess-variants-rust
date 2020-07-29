@@ -1,3 +1,5 @@
+use sdl2::render::{Canvas, RenderTarget};
+
 #[derive(Debug)]
 pub struct Piece {
     pub team_number: u32,
@@ -18,7 +20,7 @@ impl Piece {
         }
     }
 
-    pub fn show_thing(&self) {
-        dbg!(self);
+    pub fn display<RT: RenderTarget>(&mut self, canvas: &mut Canvas<RT>) {
+        // TODO this
     }
 }
