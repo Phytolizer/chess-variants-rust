@@ -16,8 +16,7 @@ pub struct PieceFactory<'tc> {
     pub piece_name: String,
     pub piece_movement: Vec<Vec<i32>>,
     // FIXME not an option
-    pub texture: Option<Texture<'tc>>,
-    texture_creator: TextureCreator<WindowContext>,
+    pub texture: Texture<'tc>,
 }
 
 enum State {
@@ -29,8 +28,8 @@ enum State {
 
 impl<'tc> PieceFactory<'tc> {
     pub fn new(
-        file: std::fs::DirEntry,
-        texture_creator: TextureCreator<WindowContext>,
+        file: &std::fs::DirEntry,
+        texture_creator: &'tc TextureCreator<WindowContext>,
     ) -> Result<PieceFactory<'tc>, Box<dyn std::error::Error>> {
         let mut piece_name = String::new();
         let mut piece_movement: Vec<Vec<i32>> = vec![];
@@ -67,19 +66,18 @@ impl<'tc> PieceFactory<'tc> {
             }
         }
         // TODO make this work!
-        // let image_surface = Surface::from_file(
-        //     TXT_FILE_REGEX
-        //         .replacen(&file.file_name().to_string_lossy(), 1, ".png")
-        //         .to_string(),
-        // )?;
-        // let texture = texture_creator.create_texture_from_surface(image_surface)?;
+        let image_surface = Surface::from_file(
+            TXT_FILE_REGEX
+                .replacen(&file.file_name().to_string_lossy(), 1, ".png")
+                .to_string(),
+        )?;
+        let texture = texture_creator.create_texture_from_surface(image_surface)?;
 
         return Ok(PieceFactory {
             piece_name,
             piece_movement,
             // FIXME texture should never be None
-            texture: None,
-            texture_creator,
+            texture,
         });
     }
     pub fn build_piece(&mut self, team: u32, pos_horz: u32, pos_vert: u32) -> Piece {
@@ -106,10 +104,11 @@ fn file_to_lines<P: AsRef<std::path::Path>>(file_name: P) -> std::io::Result<Vec
     Ok(contents)
 }
 
-pub fn new_piece_factory(
+pub fn new_piece_factory<'tc>(
     file: std::fs::DirEntry,
-) -> Result<PieceFactory, Box<dyn std::error::Error>> {
-    let mut piece_factory: PieceFactory = PieceFactory::new("name".to_string(), vec![]);
+    texture_creator: &'tc TextureCreator<WindowContext>,
+) -> Result<PieceFactory<'tc>, Box<dyn std::error::Error>> {
+    let mut piece_factory: PieceFactory = PieceFactory::new(&file, texture_creator)?;
     let mut mode: String = "".to_string();
     for line in file_to_lines(file.path())? {
         if line == "" {

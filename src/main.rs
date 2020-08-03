@@ -9,7 +9,7 @@ use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::BlendMode;
 use sdl2::render::Canvas;
-use sdl2::render::Texture;
+use sdl2::render::{Texture, TextureCreator};
 use sdl2::video::Window;
 use sdl2::video::WindowContext;
 
@@ -30,7 +30,7 @@ fn render_texture(t: &mut Texture, canvas: &mut Canvas<Window>) -> Result<(), Bo
 fn generate_piece_factory_from_files<'tc>(
     path: String,
     settings: &mut chess::ChessSettings<'tc>,
-    canvas: &mut Canvas<Window>,
+    texture_creator: &'tc TextureCreator<WindowContext>,
 ) -> Result<(), Box<dyn Error>> {
     let dir = fs::read_dir(path)?;
     settings.factory.clear();
@@ -39,7 +39,7 @@ fn generate_piece_factory_from_files<'tc>(
         if file.file_type()?.is_file() && file.file_name().to_string_lossy().ends_with(".txt") {
             settings
                 .factory
-                .push(chess::PieceFactory::new(file, canvas.texture_creator())?);
+                .push(chess::PieceFactory::new(&file, texture_creator)?);
         }
     }
     return Ok(());
@@ -85,7 +85,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     generate_piece_factory_from_files(
         "./chess_pieces".to_string(),
         &mut chess_game.settings,
-        &mut canvas,
+        &texture_creator,
     )?;
     chess_game.generate_pieces();
 
