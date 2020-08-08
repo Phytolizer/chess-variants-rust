@@ -11,5 +11,5 @@ regex = "1.3"
 lazy_static = "1.4"
 
 [dependencies.sdl2]
-version = "*"
+version = "0.34"
 features = ["image", "ttf", "mixer"]

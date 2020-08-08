@@ -78,7 +78,7 @@ pub fn generate_random(settings: &mut ChessSettings) -> Vec<piece::Piece> {
             new_pieces.push(settings.factory[index].build_piece(1, row, col));
         }
     }
-    return new_pieces;
+    new_pieces
 }
 
 impl<'tc> ChessSettings<'tc> {

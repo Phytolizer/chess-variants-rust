@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"]
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use sdl2::event::Event::Quit;
 use sdl2::event::Event::RenderTargetsReset;
@@ -38,7 +38,7 @@ fn generate_piece_factory_from_files<'tc>(
                 .push(chess::PieceFactory::new(file, canvas.texture_creator())?);
         }
     }
-    return Ok(());
+    Ok(())
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
