@@ -14,21 +14,15 @@ enum State {
     Pressed,
 }
 
-pub struct Button<CA>
-where
-    CA: Fn() -> Result<(), Box<dyn Error>>,
-{
+pub struct Button {
     pub widget: Widget,
     pub text: String,
-    pub on_click: CA,
+    pub on_click: fn() -> Result<(), Box<dyn Error>>,
 
     state: State,
 }
 
-impl<CA> Widgety for Button<CA>
-where
-    CA: Fn() -> Result<(), Box<dyn Error>>,
-{
+impl Widgety for Button {
     fn draw<RT>(&self, canvas: &mut sdl2::render::Canvas<RT>) -> Result<(), Box<dyn Error>>
     where
         RT: sdl2::render::RenderTarget,
@@ -83,5 +77,68 @@ where
             _ => {}
         }
         Ok(())
+    }
+}
+
+pub struct ButtonBuilder {
+    pub widget: Widget,
+    pub text: Option<String>,
+    pub on_click: Option<fn() -> Result<(), Box<dyn Error>>>,
+}
+
+impl ButtonBuilder {
+    pub fn size(&mut self, w: u32, h: u32) -> &mut Self {
+        self.widget.rect.set_width(w);
+        self.widget.rect.set_height(h);
+        self
+    }
+
+    pub fn position(&mut self, x: i32, y: i32) -> &mut Self {
+        self.widget.rect.set_x(x);
+        self.widget.rect.set_y(y);
+        self
+    }
+
+    pub fn color(&mut self, color: Color) -> &mut Self {
+        self.widget.color = color;
+        self
+    }
+
+    pub fn with_text<S: AsRef<str>>(&mut self, text: S) -> &mut Self {
+        self.text = Some(text.as_ref().to_owned());
+        self
+    }
+
+    pub fn with_click_action(
+        &mut self,
+        click_action: fn() -> Result<(), Box<dyn Error>>,
+    ) -> &mut Self {
+        self.on_click = Some(click_action);
+        self
+    }
+
+    pub fn build(self) -> Button {
+        Button {
+            widget: self.widget.clone(),
+            text: match &self.text {
+                Some(text) => text.to_owned(),
+                None => String::new(),
+            },
+            on_click: match self.on_click {
+                Some(on_click) => on_click,
+                None => || Ok(()),
+            },
+            state: State::Normal,
+        }
+    }
+}
+
+impl Button {
+    pub fn new() -> ButtonBuilder {
+        ButtonBuilder {
+            widget: Widget::new(None),
+            text: None,
+            on_click: None,
+        }
     }
 }

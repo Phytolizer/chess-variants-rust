@@ -20,10 +20,23 @@ pub trait Widgety {
 
 impl Widget {
     #[allow(dead_code)]
-    pub fn new(rect: Rect) -> Widget {
+    pub fn new(rect: Option<Rect>) -> Widget {
         Widget {
-            rect,
+            rect: if let Some(rect) = rect {
+                rect
+            } else {
+                Rect::new(0, 0, 0, 0)
+            },
             color: Color::BLACK,
+        }
+    }
+}
+
+impl Clone for Widget {
+    fn clone(&self) -> Self {
+        Self {
+            rect: self.rect.clone(),
+            color: self.color,
         }
     }
 }
