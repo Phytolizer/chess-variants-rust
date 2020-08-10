@@ -36,7 +36,7 @@ impl<'tc> PieceFactory<'tc> {
         let mut state = State::Start;
         for line in file_to_lines(file.path())? {
             use State::*;
-            if line.trim().is_empty() || line.starts_with("#") {
+            if line.trim().is_empty() || line.starts_with('#') {
                 continue;
             }
             match state {
@@ -65,24 +65,22 @@ impl<'tc> PieceFactory<'tc> {
                 }
             }
         }
-        // TODO make this work!
         let image_surface = Surface::from_file(
             TXT_FILE_REGEX
                 .replacen(&file.file_name().to_string_lossy(), 1, ".png")
-                .to_string(),
+                .as_ref(),
         )?;
         let texture = texture_creator.create_texture_from_surface(image_surface)?;
 
-        return Ok(PieceFactory {
+        Ok(PieceFactory {
             piece_name,
             piece_movement,
-            // FIXME texture should never be None
             texture,
-        });
+        })
     }
     pub fn build_piece(&mut self, team: u32, pos_horz: u32, pos_vert: u32) -> Piece {
         let new_piece: Piece = Piece::new(team, pos_horz, pos_vert);
-        return new_piece;
+        new_piece
     }
 }
 
@@ -93,7 +91,7 @@ fn file_to_lines<P: AsRef<std::path::Path>>(file_name: P) -> std::io::Result<Vec
     let contents: Vec<String> = reader
         .lines()
         .map(|l| match l {
-            Ok(l) => l.to_owned(),
+            Ok(l) => l,
             Err(e) => {
                 err = Err(e);
                 String::new()
@@ -130,9 +128,9 @@ pub fn new_piece_factory<'tc>(
             let parts = line.split_whitespace().map(|l| l.parse::<i32>());
             let movement: Result<Vec<i32>, _> = parts.collect();
             let movement = movement?;
-            // piece_factory.piece_movement.push(movement);
+            piece_factory.piece_movement.push(movement);
         }
         if mode == "image" {}
     }
-    return Ok(piece_factory);
+    Ok(piece_factory)
 }

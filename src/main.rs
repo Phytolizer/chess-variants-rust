@@ -51,7 +51,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     let window = sdl_video
         .window("Test window", 800, 600)
         .position_centered()
-        .vulkan()
         .resizable()
         .build()?;
 

@@ -83,7 +83,7 @@ impl Widgety for Button {
 pub struct ButtonBuilder {
     pub widget: Widget,
     pub text: Option<String>,
-    pub on_click: Option<fn() -> Result<(), Box<dyn Error>>>,
+    pub on_click: fn() -> Result<(), Box<dyn Error>>,
 }
 
 impl ButtonBuilder {
@@ -113,7 +113,7 @@ impl ButtonBuilder {
         &mut self,
         click_action: fn() -> Result<(), Box<dyn Error>>,
     ) -> &mut Self {
-        self.on_click = Some(click_action);
+        self.on_click = click_action;
         self
     }
 
@@ -124,10 +124,7 @@ impl ButtonBuilder {
                 Some(text) => text.to_owned(),
                 None => String::new(),
             },
-            on_click: match self.on_click {
-                Some(on_click) => on_click,
-                None => || Ok(()),
-            },
+            on_click: self.on_click,
             state: State::Normal,
         }
     }
@@ -138,7 +135,7 @@ impl Button {
         ButtonBuilder {
             widget: Widget::new(None),
             text: None,
-            on_click: None,
+            on_click: || Ok(()),
         }
     }
 }

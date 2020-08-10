@@ -5,6 +5,7 @@ start_moves
 0 1 8
 1 1 2
 -1 1 2
+end_moves
 
 start_image
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0

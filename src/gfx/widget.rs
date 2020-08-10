@@ -35,7 +35,7 @@ impl Widget {
 impl Clone for Widget {
     fn clone(&self) -> Self {
         Self {
-            rect: self.rect.clone(),
+            rect: self.rect,
             color: self.color,
         }
     }
