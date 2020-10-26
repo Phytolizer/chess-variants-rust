@@ -37,9 +37,10 @@ impl<'tc> PieceFactory<'tc> {
         let mut piece_movement: Vec<Vec<i32>> = vec![];
         let mut state = State::Start;
         for line in file_to_lines_iter(file.path())? {
-            let line = line?;
+            let orig_line = line?;
+            let line = orig_line.trim();
             use State::*;
-            if line.trim().is_empty() || line.starts_with('#') {
+            if line.is_empty() || line.starts_with('#') {
                 continue;
             }
             match state {
@@ -49,7 +50,7 @@ impl<'tc> PieceFactory<'tc> {
                     }
                 }
                 Name => {
-                    piece_name = line;
+                    piece_name = line.to_string();
                     state = LFMove;
                 }
                 LFMove => {
