@@ -1,3 +1,5 @@
+use crate::sdl_error::ToSdl;
+
 use super::piece::Piece;
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -30,7 +32,7 @@ impl<'tc> PieceFactory<'tc> {
     pub fn new(
         file: &std::fs::DirEntry,
         texture_creator: &'tc TextureCreator<WindowContext>,
-    ) -> Result<PieceFactory<'tc>, Box<dyn std::error::Error>> {
+    ) -> Result<PieceFactory<'tc>, crate::Error> {
         let mut piece_name = String::new();
         let mut piece_movement: Vec<Vec<i32>> = vec![];
         let mut state = State::Start;
@@ -69,8 +71,11 @@ impl<'tc> PieceFactory<'tc> {
             TXT_FILE_REGEX
                 .replacen(&file.file_name().to_string_lossy(), 1, ".png")
                 .as_ref(),
-        )?;
-        let texture = texture_creator.create_texture_from_surface(image_surface)?;
+        )
+        .sdl_error()?;
+        let texture = texture_creator
+            .create_texture_from_surface(image_surface)
+            .sdl_error()?;
 
         Ok(PieceFactory {
             piece_name,

@@ -1,4 +1,4 @@
-use std::error::Error;
+use crate::sdl_error::SdlError;
 
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
@@ -44,7 +44,7 @@ impl<'tc, T> Grid<'tc, T> {
         height: u32,
         settings: &mut super::ChessSettings,
         canvas: &mut Canvas<RT>,
-    ) -> Result<(), Box<dyn Error>>
+    ) -> Result<(), SdlError>
     where
         RT: RenderTarget,
     {

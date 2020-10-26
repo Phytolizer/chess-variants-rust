@@ -4,7 +4,7 @@ use sdl2::rect::Rect;
 use sdl2::render::Canvas;
 use sdl2::render::RenderTarget;
 
-use std::error::Error;
+use crate::Error;
 
 pub struct Widget {
     pub rect: Rect,
@@ -12,10 +12,10 @@ pub struct Widget {
 }
 
 pub trait Widgety {
-    fn draw<RT>(&self, canvas: &mut Canvas<RT>) -> Result<(), Box<dyn Error>>
+    fn draw<RT>(&self, canvas: &mut Canvas<RT>) -> Result<(), Error>
     where
         RT: RenderTarget;
-    fn handle_event(&mut self, event: Event) -> Result<(), Box<dyn Error>>;
+    fn handle_event(&mut self, event: Event) -> Result<(), Error>;
 }
 
 impl Widget {
