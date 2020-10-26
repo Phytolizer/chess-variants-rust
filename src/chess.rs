@@ -14,7 +14,7 @@ pub enum GameType {
 
 pub struct Chess<'tc, T> {
     pub settings: ChessSettings<'tc>,
-    pub pieces: Vec<piece::Piece>,
+    pub pieces: Vec<piece::Piece<'tc>>,
     pub grid: grid::Grid<'tc, T>,
     pub player_turn: u32,
     pub selected_piece: u32,
@@ -48,38 +48,40 @@ impl<'tc, T> Chess<'tc, T> {
     }
 
     pub fn generate_pieces(&mut self) {
-        self.pieces.clear();
         match self.settings.game_type {
             //GameType::Classic => generate_classic(&mut self.settings),
-            GameType::Random => self.pieces = generate_random(&mut self.settings),
+            GameType::Random => self.generate_random(),
             //_ => return,
         }
     }
 
-    pub fn display_pieces<RT>(&self, canvas: &mut Canvas<RT>)
+    pub fn display_pieces<RT>(&self, canvas: &mut Canvas<RT>) -> Result<(), crate::Error>
     where
         RT: RenderTarget,
     {
-        self.pieces.iter().for_each(|p| p.display(canvas));
+        self.pieces
+            .iter()
+            .map(|p| p.display(canvas))
+            .collect::<Result<_, _>>()?;
+        Ok(())
     }
-}
-
-//pub fn generate_classic(settings: &mut ChessSettings) {}
-pub fn generate_random(settings: &mut ChessSettings) -> Vec<piece::Piece> {
-    let mut new_pieces = vec![];
-    let mut rng = rand::thread_rng();
-    for row in 0..settings.starting_rows {
-        for col in 0..settings.squares_horz {
-            let index = rng.gen_range(0, settings.factory.len());
-            new_pieces.push(settings.factory[index].build_piece(
-                0,
-                settings.squares_vert - row - 1,
-                col,
-            ));
-            new_pieces.push(settings.factory[index].build_piece(1, row, col));
+    //pub fn generate_classic(settings: &mut ChessSettings) {}
+    pub fn generate_random(&mut self) {
+        self.pieces.clear();
+        let mut rng = rand::thread_rng();
+        for row in 0..self.settings.starting_rows {
+            for col in 0..self.settings.squares_horz {
+                let index = rng.gen_range(0, self.settings.factory.len());
+                self.pieces.push(self.settings.factory[index].build_piece(
+                    0,
+                    self.settings.squares_vert - row - 1,
+                    col,
+                ));
+                self.pieces
+                    .push(self.settings.factory[index].build_piece(1, row, col));
+            }
         }
     }
-    new_pieces
 }
 
 impl<'tc> ChessSettings<'tc> {

@@ -8,7 +8,7 @@ use sdl2::{
     render::{Texture, TextureCreator},
     video::WindowContext,
 };
-use std::{io::BufRead, num::ParseIntError};
+use std::{io::BufRead, num::ParseIntError, sync::Arc};
 
 lazy_static! {
     static ref TXT_FILE_REGEX: Regex = Regex::new(r"\.txt$").unwrap();
@@ -18,7 +18,7 @@ pub struct PieceFactory<'tc> {
     pub piece_name: String,
     pub piece_movement: Vec<Vec<i32>>,
     // FIXME not an option
-    pub texture: Texture<'tc>,
+    pub texture: Arc<Texture<'tc>>,
 }
 
 enum State {
@@ -82,11 +82,11 @@ impl<'tc> PieceFactory<'tc> {
         Ok(PieceFactory {
             piece_name,
             piece_movement,
-            texture,
+            texture: Arc::new(texture),
         })
     }
-    pub fn build_piece(&mut self, team: u32, pos_horz: u32, pos_vert: u32) -> Piece {
-        let new_piece: Piece = Piece::new(team, pos_horz, pos_vert);
+    pub fn build_piece(&self, team: u32, pos_horz: u32, pos_vert: u32) -> Piece<'tc> {
+        let new_piece: Piece = Piece::new(team, pos_horz, pos_vert, self.texture.clone());
         new_piece
     }
 }
