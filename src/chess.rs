@@ -5,7 +5,7 @@ pub mod piece_factory;
 pub use piece_factory::PieceFactory;
 
 use rand::Rng;
-use sdl2::render::{RenderTarget, Canvas};
+use sdl2::render::{Canvas, RenderTarget};
 
 pub enum GameType {
     //Classic,
@@ -56,10 +56,11 @@ impl<'tc, T> Chess<'tc, T> {
         }
     }
 
-    pub fn display_pieces<RT>(&mut self, canvas: &mut Canvas<RT>) where RT: RenderTarget {
-        for index in 0..self.pieces.len() {
-            self.pieces[index].display(canvas);
-        }
+    pub fn display_pieces<RT>(&self, canvas: &mut Canvas<RT>)
+    where
+        RT: RenderTarget,
+    {
+        self.pieces.iter().for_each(|p| p.display(canvas));
     }
 }
 

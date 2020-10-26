@@ -20,7 +20,7 @@ impl Piece {
         }
     }
 
-    pub fn display<RT: RenderTarget>(&mut self, canvas: &mut Canvas<RT>) {
+    pub fn display<RT: RenderTarget>(&self, canvas: &mut Canvas<RT>) {
         // TODO this
     }
 }
