@@ -1,4 +1,4 @@
-use crate::sdl_error::ToSdl;
+use crate::{sdl_error::ToSdl, Error};
 
 use super::piece::Piece;
 use lazy_static::lazy_static;
@@ -110,7 +110,7 @@ fn file_to_lines<P: AsRef<std::path::Path>>(file_name: P) -> std::io::Result<Vec
 pub fn new_piece_factory<'tc>(
     file: std::fs::DirEntry,
     texture_creator: &'tc TextureCreator<WindowContext>,
-) -> Result<PieceFactory<'tc>, Box<dyn std::error::Error>> {
+) -> Result<PieceFactory<'tc>, Error> {
     let mut piece_factory: PieceFactory = PieceFactory::new(&file, texture_creator)?;
     let mut mode: String = "".to_string();
     for line in file_to_lines(file.path())? {
@@ -131,8 +131,7 @@ pub fn new_piece_factory<'tc>(
         }
         if mode == "move" {
             let parts = line.split_whitespace().map(|l| l.parse::<i32>());
-            let movement: Result<Vec<i32>, _> = parts.collect();
-            let movement = movement?;
+            let movement = parts.collect::<Result<Vec<_>, _>>()?;
             piece_factory.piece_movement.push(movement);
         }
         if mode == "image" {}
