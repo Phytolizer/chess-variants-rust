@@ -92,18 +92,7 @@ impl<'tc> PieceFactory<'tc> {
 fn file_to_lines<P: AsRef<std::path::Path>>(file_name: P) -> std::io::Result<Vec<String>> {
     let f = std::fs::File::open(file_name)?;
     let reader = std::io::BufReader::new(f);
-    let mut err: std::io::Result<()> = Ok(());
-    let contents: Vec<String> = reader
-        .lines()
-        .map(|l| match l {
-            Ok(l) => l,
-            Err(e) => {
-                err = Err(e);
-                String::new()
-            }
-        })
-        .collect();
-    err?;
+    let contents: Vec<String> = reader.lines().collect::<Result<_, _>>()?;
     Ok(contents)
 }
 
