@@ -34,12 +34,12 @@ fn generate_piece_factory_from_files<'tc>(
     texture_creator: &'tc TextureCreator<WindowContext>,
 ) -> Result<(), Error> {
     let dir = fs::read_dir(path)?;
-    settings.factories.clear();
+    settings.factory.clear();
     for file in dir {
         let file = file?;
         if file.file_type()?.is_file() && file.file_name().to_string_lossy().ends_with(".txt") {
             settings
-                .factories
+                .factory
                 .push(chess::PieceFactory::new(&file, texture_creator)?);
         }
     }
