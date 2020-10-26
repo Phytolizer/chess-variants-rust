@@ -36,7 +36,8 @@ impl<'tc> PieceFactory<'tc> {
         let mut piece_name = String::new();
         let mut piece_movement: Vec<Vec<i32>> = vec![];
         let mut state = State::Start;
-        for line in file_to_lines(file.path())? {
+        for line in file_to_lines_iter(file.path())? {
+            let line = line?;
             use State::*;
             if line.trim().is_empty() || line.starts_with('#') {
                 continue;
@@ -89,11 +90,12 @@ impl<'tc> PieceFactory<'tc> {
     }
 }
 
-fn file_to_lines<P: AsRef<std::path::Path>>(file_name: P) -> std::io::Result<Vec<String>> {
+fn file_to_lines_iter<P: AsRef<std::path::Path>>(
+    file_name: P,
+) -> std::io::Result<impl Iterator<Item = std::io::Result<String>>> {
     let f = std::fs::File::open(file_name)?;
     let reader = std::io::BufReader::new(f);
-    let contents: Vec<String> = reader.lines().collect::<Result<_, _>>()?;
-    Ok(contents)
+    Ok(reader.lines())
 }
 
 pub fn new_piece_factory<'tc>(
@@ -102,7 +104,8 @@ pub fn new_piece_factory<'tc>(
 ) -> Result<PieceFactory<'tc>, Error> {
     let mut piece_factory: PieceFactory = PieceFactory::new(&file, texture_creator)?;
     let mut mode: String = "".to_string();
-    for line in file_to_lines(file.path())? {
+    for line in file_to_lines_iter(file.path())? {
+        let line = line?;
         if line == "" {
             continue;
         }
