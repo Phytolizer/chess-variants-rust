@@ -70,7 +70,8 @@ impl<'tc> PieceFactory<'tc> {
         let image_surface = Surface::from_file(
             TXT_FILE_REGEX
                 .replacen(
-                    std::path::PathBuf::from(std::env::current_dir().unwrap())
+                    std::env::current_dir()
+                        .unwrap()
                         .join("chess_pieces")
                         .join(&file.file_name())
                         .to_str()
