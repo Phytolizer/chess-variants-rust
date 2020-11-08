@@ -5,7 +5,8 @@ pub mod piece_factory;
 pub use piece_factory::PieceFactory;
 
 use rand::Rng;
-use sdl2::render::{Canvas, RenderTarget};
+use sdl2::render::Canvas;
+use sdl2::render::RenderTarget;
 
 pub enum GameType {
     //Classic,
@@ -19,6 +20,7 @@ pub struct Chess<'tc, T> {
     pub player_turn: u32,
     pub selected_piece: u32,
 }
+
 pub struct ChessSettings<'tc> {
     pub game_type: GameType,
     pub squares_horz: u32,
