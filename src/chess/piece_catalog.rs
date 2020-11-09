@@ -1,4 +1,5 @@
 use super::piece::Piece;
+use std::io::{BufRead, BufReader};
 
 pub struct PieceCatalog {
     catalog: Vec<Piece>,
@@ -14,20 +15,21 @@ impl PieceCatalog {
         for file in dir {
             let file = file?;
             if file.file_type()?.is_file() && file.file_name().to_string_lossy().ends_with(".txt") {
+                let reader = BufReader::new(file);
                 let piece = Piece::new();
-                for line in file {
-                    if line.startsWith("-") {
+                for line in reader.lines() {
+                    if line.starts_with("-") {
                         continue;
-                    } else if line.startsWith("Name") {
+                    } else if line.starts_with("Name") {
                         // Name: Rook
                         piece.name = line;
-                    } else if line.startsWith("Image") {
+                    } else if line.starts_with("Image") {
                         // Image: Bishop.png
                         piece.image = line;
-                    } else if line.startsWith("Move") {
+                    } else if line.starts_with("Move") {
                         // Move: 0 1
                         piece.move_set.push(line);
-                    } else if line.startsWith("Kill") {
+                    } else if line.starts_with("Kill") {
                         // Kill: 1 1
                         piece.kill_set.push(line);
                     }
