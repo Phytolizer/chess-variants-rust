@@ -1,11 +1,4 @@
-Moves
-
-X, Y, Move
-
-Move Types:
-
-0 = Move Only
-1 = Move or kill
-2 = Kill Only
-8 = Pawn First Move
-9 = Run Until Stopped or Kill (Rook / Bishop)
+name PieceName
+image ImagePath
+move h v
+kill h v
