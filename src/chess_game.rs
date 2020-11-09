@@ -1,65 +1,25 @@
-pub mod board;
-
-pub use board::Board;
-pub use piece_catalog::PieceCatalog;
-
 mod board;
 mod board_space;
 mod game_piece;
 mod new_piece;
-mod old_grid;
-mod old_piece;
-mod old_piece_factory;
 mod piece;
 mod piece_catalog;
 mod piece_factory;
 
 pub struct ChessGame {
-    pub board: Board,
-    pub piece_catalog: PieceCatalog,
+    pub board: board::Board,
+    pub piece_catalog: piece_catalog::PieceCatalog,
 }
 
 impl ChessGame {
-    pub fn new() -> Result<ChessGame> {
+    pub fn new() -> Result<ChessGame, crate::Error> {
         Ok(ChessGame {
-            board: Board::new(),
-            piece_catalog: PieceCatalog::new(),
+            board: board::Board::new(),
+            piece_catalog: piece_catalog::PieceCatalog::new(),
         })
     }
 
     pub fn generate_pieces(&mut self) {
-        match self.settings.game_type {
-            //GameType::Classic => generate_classic(&mut self.settings),
-            GameType::Random => self.generate_random(),
-            //_ => return,
-        }
-    }
-
-    pub fn display_pieces<RT>(&self, canvas: &mut Canvas<RT>) -> Result<(), crate::Error>
-    where
-        RT: RenderTarget,
-    {
-        self.pieces
-            .iter()
-            .map(|p| p.display(canvas))
-            .collect::<Result<_, _>>()?;
-        Ok(())
-    }
-    //pub fn generate_classic(settings: &mut ChessSettings) {}
-    pub fn generate_random(&mut self) {
-        self.pieces.clear();
-        let mut rng = rand::thread_rng();
-        for row in 0..self.settings.starting_rows {
-            for col in 0..self.settings.squares_horz {
-                let index = rng.gen_range(0, self.settings.factory.len());
-                self.pieces.push(self.settings.factory[index].build_piece(
-                    0,
-                    self.settings.squares_vert - row - 1,
-                    col,
-                ));
-                self.pieces
-                    .push(self.settings.factory[index].build_piece(1, row, col));
-            }
-        }
+        
     }
 }

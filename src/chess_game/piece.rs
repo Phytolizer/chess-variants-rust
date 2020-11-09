@@ -12,8 +12,8 @@ impl Piece {
         Ok(Piece {
             name: "",
             image_path: "",
-            move_set: Vec![],
-            kill_set: Vec![],
+            move_set: vec![],
+            kill_set: vec![],
         })
     }
 }

@@ -8,7 +8,7 @@ pub struct BoardSpace {
 }
 
 impl BoardSpace {
-    pub fn new(horz: char, vert: u32) -> Result<BoardSpace> {
+    pub fn new(horz: char, vert: u32) -> Result<BoardSpace, crate::Error> {
         Ok(BoardSpace {
             horz_position: horz,
             vert_position: vert,

@@ -6,7 +6,12 @@ pub struct Piece {
 }
 
 impl Piece {
-    pub fn new(name: String, image: String, moves: Vec<Vec<bool>>, kills: Vec<Vec<bool>>) -> Result<Piece> {
+    pub fn new(
+        name: String,
+        image: String,
+        moves: Vec<Vec<bool>>,
+        kills: Vec<Vec<bool>>,
+    ) -> Result<Piece, crate::Error> {
         Ok(Piece {
             piece_name: name,
             image_path: image,
@@ -23,7 +28,7 @@ impl Piece {
         return self.image_path;
     }
 
-    pub fn get_move_set(&mut self) -> Vec<Vec<bool>>{
+    pub fn get_move_set(&mut self) -> Vec<Vec<bool>> {
         return self.move_set;
     }
 

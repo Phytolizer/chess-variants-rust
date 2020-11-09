@@ -1,4 +1,4 @@
-use std::io::BufRead;
+use std::fs;
 use std::io::BufReader;
 
 use super::piece::Piece;
@@ -8,8 +8,8 @@ pub struct PieceCatalog {
 }
 
 impl PieceCatalog {
-    pub fn new() -> Result<PieceCatalog> {
-        Ok(PieceCatalog { catalog: Vec![] })
+    pub fn new() -> Result<PieceCatalog, crate::Error> {
+        Ok(PieceCatalog { catalog: vec![] })
     }
 
     pub fn generate(&mut self, dir_path: String) {
