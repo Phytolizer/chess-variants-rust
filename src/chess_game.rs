@@ -1,6 +1,17 @@
 pub use board::Board;
 pub use piece_catalog::PieceCatalog;
 
+mod board;
+mod board_space;
+mod game_piece;
+mod new_piece;
+mod old_grid;
+mod old_piece;
+mod old_piece_factory;
+mod piece;
+mod piece_catalog;
+mod piece_factory;
+
 pub struct ChessGame {
     pub board: Board,
     pub piece_catalog: PieceCatalog,
