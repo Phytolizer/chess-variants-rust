@@ -1,0 +1,15 @@
+----------------------------
+Name: Board Name
+Size: horizontalSize verticalSize
+----------------------------
+Player: player1
+Player: player2
+----------------------------
+Disabled: horizontalPosition verticalPosition
+Disabled: horizontalPosition verticalPosition
+----------------------------
+Piece: horizontalPosition verticalPosition player# piece
+Piece: a 1 player1 rook
+Piece: d 1 player1 queen
+Piece: d 8 player2 queen
+----------------------------

@@ -3,11 +3,9 @@ use crate::sdl_error::ToSdl;
 use super::piece::Piece;
 use lazy_static::lazy_static;
 use regex::Regex;
+use sdl2::render::{Texture, TextureCreator};
+use sdl2::video::WindowContext;
 use sdl2::{image::LoadSurface, surface::Surface};
-use sdl2::{
-    render::{Texture, TextureCreator},
-    video::WindowContext,
-};
 use std::{io::BufRead, num::ParseIntError, sync::Arc};
 
 lazy_static! {
@@ -71,7 +69,16 @@ impl<'tc> PieceFactory<'tc> {
         }
         let image_surface = Surface::from_file(
             TXT_FILE_REGEX
-                .replacen(&file.file_name().to_string_lossy(), 1, ".png")
+                .replacen(
+                    std::env::current_dir()
+                        .unwrap()
+                        .join("chess_pieces")
+                        .join(&file.file_name())
+                        .to_str()
+                        .unwrap(),
+                    1,
+                    ".png",
+                )
                 .as_ref(),
         )
         .sdl_error()?;
