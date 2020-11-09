@@ -3,7 +3,6 @@
 use gfx::Button;
 use gfx::Widgety;
 
-use sdl2::event::Event::Quit;
 use sdl2::event::Event::RenderTargetsReset;
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
@@ -12,6 +11,7 @@ use sdl2::render::Canvas;
 use sdl2::render::{Texture, TextureCreator};
 use sdl2::video::Window;
 use sdl2::video::WindowContext;
+use sdl2::{event::Event::Quit, render::TextureValueError};
 use sdl_error::{SdlError, ToSdl};
 
 use std::fs;
@@ -161,8 +161,17 @@ pub enum Error {
     Sdl(#[from] SdlError),
 
     #[error(transparent)]
+    TextureValue(#[from] TextureValueError),
+
+    #[error(transparent)]
     Io(#[from] std::io::Error),
 
     #[error(transparent)]
     ParseInt(#[from] std::num::ParseIntError),
+
+    #[error(transparent)]
+    InvalidFileFormat(#[from] chess_game::InvalidFormatError),
+
+    #[error(transparent)]
+    PieceNotFound(#[from] chess_game::piece_catalog::PieceNotFoundError),
 }

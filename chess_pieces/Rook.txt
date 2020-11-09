@@ -2,13 +2,8 @@
 Name: Rook
 Image: Rook.png
 ----------------------------
-Move: 0 x
-Move: 0 -x
-Move: x 0
-Move: -x 0
-----------------------------
-Kill: 0 x
-Kill: 0 -x
-Kill: x 0
-Kill: -x 0
+Run: 0 1
+Run: 0 -1
+Run: 1 0
+Run: -1 0
 ----------------------------

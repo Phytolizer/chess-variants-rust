@@ -2,14 +2,14 @@
 Name: Knight
 Image: Knight.png
 ----------------------------
-Move: 2 1
-Move: 2 -1
-Move: 1 2
-Move: -1 2
-Move: -2 1
-Move: -2 -1
-Move: 1 -2
-Move: -1 -2
+Leap: 2 1
+Leap: 2 -1
+Leap: 1 2
+Leap: -1 2
+Leap: -2 1
+Leap: -2 -1
+Leap: 1 -2
+Leap: -1 -2
 ----------------------------
 Kill: 2 1
 Kill: 2 -1

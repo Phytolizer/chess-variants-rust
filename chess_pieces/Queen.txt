@@ -2,21 +2,12 @@
 Name: Queen
 Image: Queen.png
 ----------------------------
-Move: 0 x
-Move: 0 -x
-Move: x 0
-Move: -x 0
-Move: x x
-Move: x -x
-Move: -x x
-Move: -x -x
-----------------------------
-Kill: 0 x
-Kill: 0 -x
-Kill: x 0
-Kill: -x 0
-Kill: x x
-Kill: x -x
-Kill: -x x
-Kill: -x -x
+Run: 0 1
+Run: 0 -1
+Run: 1 0
+Run: -1 0
+Run: 1 1
+Run: 1 -1
+Run: -1 1
+Run: -1 -1
 ----------------------------

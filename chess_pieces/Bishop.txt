@@ -2,13 +2,8 @@
 Name: Bishop
 Image: Bishop.png
 ----------------------------
-Move: x x
-Move: x -x
-Move: -x x
-Move: -x -x
-----------------------------
-Kill: x x
-Kill: x -x
-Kill: -x x
-Kill: -x -x
+Run: 1 1
+Run: 1 -1
+Run: -1 1
+Run: -1 -1
 ----------------------------

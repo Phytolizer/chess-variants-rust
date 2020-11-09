@@ -3,9 +3,9 @@ use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
 
-use super::board_space::BoardSpace;
 use super::game_piece::GamePiece;
 use super::piece_catalog::PieceCatalog;
+use super::{board_space::BoardSpace, InvalidFormatError};
 
 pub struct Board {
     pub name: String,
@@ -33,6 +33,7 @@ impl Board {
     ) -> Result<(), crate::Error> {
         if file.file_type()?.is_file() && file.file_name().to_string_lossy().ends_with(".txt") {
             let reader = BufReader::new(File::open(file.path())?);
+            let mut line_num = 1;
             for line in reader.lines() {
                 let line = line?;
                 if line.starts_with("-") {
@@ -42,8 +43,8 @@ impl Board {
                     self.name = line;
                 } else if line.starts_with("Size") {
                     // Size: 8 8
-                    let horzSize = line;
-                    let vertSize = line;
+                    let horz_size = line;
+                    let vert_size = line;
                 // Generate blank board_space to self.grid
                 } else if line.starts_with("Player") {
                     // Players: white
@@ -51,13 +52,30 @@ impl Board {
                 } else if line.starts_with("Disabled") {
                     // Update board_space at location in grid and disable
                 } else if line.starts_with("Piece") {
-                    let horzPos = line;
-                    let vertPos = line;
-                    let team_name = line;
-                    let piece = chess_pieces.find_piece(line);
+                    let line = line.split_whitespace().take(1);
+                    let horz_pos = line
+                        .next()
+                        .ok_or_else(|| InvalidFormatError::new(line_num))?
+                        .chars()
+                        .next()
+                        .unwrap();
+                    let vert_pos = line
+                        .next()
+                        .ok_or_else(|| InvalidFormatError::new(line_num))?
+                        .parse()?;
+                    let team_name = line
+                        .next()
+                        .ok_or_else(|| InvalidFormatError::new(line_num))?
+                        .to_string();
+                    let piece = chess_pieces.get_piece(
+                        line.next()
+                            .ok_or_else(|| InvalidFormatError::new(line_num))?
+                            .to_string(),
+                    )?;
                     self.game_pieces
-                        .push(GamePiece::new(piece, team_name, horzPos, vertPos)?);
+                        .push(GamePiece::new(piece.name, team_name, horz_pos, vert_pos)?);
                 }
+                line_num += 1;
             }
         }
         Ok(())

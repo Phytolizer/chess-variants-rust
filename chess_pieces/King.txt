@@ -2,14 +2,14 @@
 Name: King
 Image: King.png
 ----------------------------
-Move: 1 1
-Move: 1 -1
-Move: -1 1
-Move: -1 -1
-Move: 1 1
-Move: 1 -1
-Move: -1 1
-Move: -1 -1
+Leap: 1 1
+Leap: 1 -1
+Leap: -1 1
+Leap: -1 -1
+Leap: 1 1
+Leap: 1 -1
+Leap: -1 1
+Leap: -1 -1
 ----------------------------
 Kill: 1 1
 Kill: 1 -1

@@ -1,19 +1,11 @@
-start_name
-Bishop
-
-start_moves
-0 1 8
-1 1 2
--1 1 2
-end_moves
 ----------------------------
 Name: Pawn
 Image: Pawn.png
 ----------------------------
-Move: 0 1
+Leap: 0 1
 ----------------------------
 Kill: 1 1
 Kill: -1 1
 ----------------------------
-Special: 0 2 pawn
+Special: 0 2 first
 ----------------------------
