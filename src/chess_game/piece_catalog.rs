@@ -1,5 +1,7 @@
+use std::io::BufRead;
+use std::io::BufReader;
+
 use super::piece::Piece;
-use std::io::{BufRead, BufReader};
 
 pub struct PieceCatalog {
     catalog: Vec<Piece>,

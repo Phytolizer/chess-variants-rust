@@ -16,7 +16,7 @@ use sdl_error::{SdlError, ToSdl};
 
 use std::fs;
 
-mod chess;
+mod chess_game;
 mod gfx;
 mod sdl_error;
 

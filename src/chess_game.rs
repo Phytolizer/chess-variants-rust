@@ -1,3 +1,5 @@
+pub mod board;
+
 pub use board::Board;
 pub use piece_catalog::PieceCatalog;
 
