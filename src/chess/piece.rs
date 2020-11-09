@@ -26,6 +26,7 @@ impl<'tc> Piece<'tc> {
     }
 
     pub fn display<RT: RenderTarget>(&self, canvas: &mut Canvas<RT>) -> Result<(), crate::Error> {
+        // TODO properly scale the piece to the board
         canvas
             .copy(
                 &self.texture,

@@ -139,6 +139,7 @@ fn main() {
                     ),
                 )
                 .sdl_error()?;
+            test_button.draw(&mut canvas)?;
             chess_game.display_pieces(&mut canvas)?;
             canvas.present();
         }
