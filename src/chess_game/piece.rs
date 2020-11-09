@@ -8,10 +8,10 @@ pub struct Piece {
 // pub struct Move {}
 
 impl Piece {
-    pub fn new() -> Piece {
+    pub fn new() -> Result<Piece, crate::Error> {
         Ok(Piece {
-            name: "",
-            image_path: "",
+            name: "".to_string(),
+            image_path: "".to_string(),
             move_set: vec![],
             kill_set: vec![],
         })

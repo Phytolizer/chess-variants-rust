@@ -1,4 +1,6 @@
 use std::fs;
+use std::fs::File;
+use std::io::BufRead;
 use std::io::BufReader;
 
 use super::piece::Piece;
@@ -12,14 +14,15 @@ impl PieceCatalog {
         Ok(PieceCatalog { catalog: vec![] })
     }
 
-    pub fn generate(&mut self, dir_path: String) {
+    pub fn generate(&mut self, dir_path: String) -> Result<(), crate::Error> {
         let dir = fs::read_dir(dir_path)?;
-        for file in dir {
-            let file = file?;
+        for path in dir {
+            let file = path?;
             if file.file_type()?.is_file() && file.file_name().to_string_lossy().ends_with(".txt") {
-                let reader = BufReader::new(file);
-                let piece = Piece::new();
+                let reader = BufReader::new(File::open(file.path())?);
+                let piece = Piece::new()?;
                 for line in reader.lines() {
+                    let line = line?;
                     if line.starts_with("-") {
                         continue;
                     } else if line.starts_with("Name") {
@@ -27,7 +30,7 @@ impl PieceCatalog {
                         piece.name = line;
                     } else if line.starts_with("Image") {
                         // Image: Bishop.png
-                        piece.image = line;
+                        piece.image_path = line;
                     } else if line.starts_with("Move") {
                         // Move: 0 1
                         piece.move_set.push(line);
@@ -39,5 +42,6 @@ impl PieceCatalog {
                 self.catalog.push(piece);
             }
         }
+        Ok(())
     }
 }

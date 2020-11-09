@@ -1,19 +1,19 @@
 use super::piece::Piece;
 
-pub struct GamePiece {
-    piece: Piece, // Needs to be reference (lifetime?)
-    team_name: String,
-    horz_position: char,
-    vert_position: u32,
+pub struct GamePiece<'p> {
+    pub piece: &'p Piece, // Needs to be reference (lifetime?)
+    pub team_name: String,
+    pub horz_position: char,
+    pub vert_position: u32,
 }
 
-impl GamePiece {
+impl<'p> GamePiece<'p> {
     pub fn new(
-        p: &GamePiece,
+        p: &'p Piece,
         team: String,
         horz: char,
         vert: u32,
-    ) -> Result<GamePiece, crate::Error> {
+    ) -> Result<GamePiece<'p>, crate::Error> {
         Ok(GamePiece {
             piece: p,
             team_name: team,

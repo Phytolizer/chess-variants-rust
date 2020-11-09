@@ -4,22 +4,22 @@ mod game_piece;
 mod new_piece;
 mod piece;
 mod piece_catalog;
-mod piece_factory;
+
+use board::Board;
+use piece_catalog::PieceCatalog;
 
 pub struct ChessGame {
-    pub board: board::Board,
+    pub board: Board,
     pub piece_catalog: piece_catalog::PieceCatalog,
 }
 
 impl ChessGame {
     pub fn new() -> Result<ChessGame, crate::Error> {
         Ok(ChessGame {
-            board: board::Board::new(),
-            piece_catalog: piece_catalog::PieceCatalog::new(),
+            board: Board::new()?,
+            piece_catalog: PieceCatalog::new()?,
         })
     }
 
-    pub fn generate_pieces(&mut self) {
-        
-    }
+    pub fn generate_pieces(&mut self) {}
 }
