@@ -1,4 +1,4 @@
-use std::fs;
+use std::{collections::HashMap, fs};
 use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
@@ -6,12 +6,12 @@ use std::io::BufReader;
 use super::piece::Piece;
 
 pub struct PieceCatalog {
-    catalog: Vec<Piece>,
+    catalog: HashMap<String, Piece>,
 }
 
 impl PieceCatalog {
     pub fn new() -> Result<PieceCatalog, crate::Error> {
-        Ok(PieceCatalog { catalog: vec![] })
+        Ok(PieceCatalog { catalog: HashMap::new() })
     }
 
     pub fn generate(&mut self, dir_path: String) -> Result<(), crate::Error> {
@@ -39,9 +39,13 @@ impl PieceCatalog {
                         piece.kill_set.push(line);
                     }
                 }
-                self.catalog.push(piece);
+                self.catalog.insert(piece.name, piece);
             }
         }
         Ok(())
+    }
+
+    pub fn get_piece(&self, piece_name: String) -> Result<&Piece, crate::Error> {
+        Ok(self.catalog.get(piece_name))
     }
 }
