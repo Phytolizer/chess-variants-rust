@@ -89,7 +89,7 @@ impl Board {
                         .ok_or_else(|| InvalidFormatError::new(line_num, line.clone()))?
                         .to_string();
                     let piece = chess_pieces.get_piece(
-                        line_iter
+                        &line_iter
                             .next()
                             .ok_or_else(|| InvalidFormatError::new(line_num, line.clone()))?
                             .to_string(),

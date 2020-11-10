@@ -1,7 +1,8 @@
 use sdl2::rect::Rect;
-use std::{collections::HashMap, fmt::Display};
+use std::{collections::HashMap, fmt::Display, fs, path::PathBuf};
 
 use sdl2::{
+    image::LoadTexture,
     pixels::Color,
     rect::Point,
     render::{Texture, TextureCreator, WindowCanvas},
@@ -10,13 +11,15 @@ use sdl2::{
 use crate::sdl_error::ToSdl;
 
 use super::board::Board;
-use super::piece_catalog::PieceCatalog;
 
 pub struct TextureRegistry<'tc, C> {
     pub texture_creator: &'tc TextureCreator<C>,
     pub board_texture: Option<Texture<'tc>>,
     pub pieces: HashMap<String, Texture<'tc>>,
     pub area: Rect,
+    pub squares_size: u32,
+    pub off_horz: i32,
+    pub off_vert: i32,
 }
 
 impl<'tc, C> TextureRegistry<'tc, C> {
@@ -26,6 +29,9 @@ impl<'tc, C> TextureRegistry<'tc, C> {
             board_texture: None,
             pieces: HashMap::new(),
             area: Rect::new(0, 0, 0, 0),
+            squares_size: 0,
+            off_horz: 0,
+            off_vert: 0,
         }
     }
 
@@ -41,20 +47,18 @@ impl<'tc, C> TextureRegistry<'tc, C> {
             board.height,
         )?;
 
-        let squares_size = if canvas_size.0 / board.width < canvas_size.1 / board.height {
+        self.squares_size = if canvas_size.0 / board.width < canvas_size.1 / board.height {
             canvas_size.0 / board.width
         } else {
             canvas_size.1 / board.height
         };
 
-        let off_horz = ((canvas_size.0 - board.width * squares_size) / 2) as i32;
-        let off_vert = ((canvas_size.1 - board.height * squares_size) / 2) as i32;
-        let size_horz = board.width * squares_size;
-        let size_vert = board.height * squares_size;
+        self.off_horz = ((canvas_size.0 - board.width * self.squares_size) / 2) as i32;
+        self.off_vert = ((canvas_size.1 - board.height * self.squares_size) / 2) as i32;
+        let size_horz = board.width * self.squares_size;
+        let size_vert = board.height * self.squares_size;
 
-        dbg!((off_horz, off_vert, canvas_size));
-
-        self.area = Rect::new(off_horz, off_vert, size_horz, size_vert); // FIXME add offset
+        self.area = Rect::new(self.off_horz, self.off_vert, size_horz, size_vert); // FIXME add offset
         canvas.with_texture_canvas(&mut board_texture, |c: &mut WindowCanvas| {
             c.set_draw_color(Color::BLACK);
             c.clear();
@@ -75,12 +79,28 @@ impl<'tc, C> TextureRegistry<'tc, C> {
         Ok(())
     }
 
-    pub fn render(
-        &self,
-        canvas: &mut WindowCanvas,
-        board: &Board,
-        pieces: &PieceCatalog,
-    ) -> Result<(), crate::Error> {
+    pub fn generate_piece_images(&mut self, dir_path: String) -> Result<(), crate::Error> {
+        let dir = fs::read_dir(&dir_path)?;
+        for path in dir {
+            let file = path?;
+            if file.file_type()?.is_file()
+                && regex::Regex::new("\\.(png|jpg|jpeg)$")
+                    .unwrap()
+                    .is_match(&file.file_name().to_string_lossy())
+            {
+                let full_file_name = file.file_name().to_string_lossy().to_string();
+                let tex = self
+                    .texture_creator
+                    .load_texture(&PathBuf::from(&dir_path).join(&full_file_name))
+                    .sdl_error()?;
+                let key = full_file_name.split('.').next().unwrap();
+                self.pieces.insert(key.to_string(), tex);
+            }
+        }
+        Ok(())
+    }
+
+    pub fn render(&self, canvas: &mut WindowCanvas, board: &Board) -> Result<(), crate::Error> {
         canvas
             .copy(
                 self.board_texture
@@ -90,6 +110,21 @@ impl<'tc, C> TextureRegistry<'tc, C> {
                 Some(self.area),
             )
             .sdl_error()?;
+        for game_piece in &board.game_pieces {
+            let piece_texture = match self.pieces.get(&game_piece.piece_name) {
+                Some(pt) => pt,
+                None => continue,
+            };
+            let piece_area = Rect::new(
+                self.off_horz + ((game_piece.horz_position - 1) * self.squares_size) as i32,
+                self.off_vert + ((game_piece.vert_position - 1) * self.squares_size) as i32,
+                self.squares_size,
+                self.squares_size,
+            );
+            canvas
+                .copy(piece_texture, None, Some(piece_area))
+                .sdl_error()?;
+        }
         Ok(())
     }
 }

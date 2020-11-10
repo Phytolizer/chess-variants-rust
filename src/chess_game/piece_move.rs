@@ -3,6 +3,7 @@ use enum_derive::EnumFromStr;
 use macro_attr::macro_attr;
 use macro_attr::macro_attr_impl;
 
+#[derive(Debug)]
 pub struct PieceMove {
     forward: i32,
     left: i32,
@@ -10,7 +11,7 @@ pub struct PieceMove {
 }
 
 macro_attr! {
-#[derive(EnumFromStr!)]
+#[derive(Debug, EnumFromStr!)]
 pub enum MoveRules {
     Leap,
     Kill,

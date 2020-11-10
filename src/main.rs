@@ -106,11 +106,7 @@ fn main() {
 
             canvas.set_draw_color(Color::RGB(0x20, 0x20, 0x20));
             canvas.clear();
-            chess_game.textures.render(
-                &mut canvas,
-                &chess_game.board,
-                &chess_game.piece_catalog,
-            )?;
+            chess_game.textures.render(&mut canvas, &chess_game.board)?;
             test_button.draw(&mut canvas)?;
             canvas.present();
         }

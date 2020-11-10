@@ -1,6 +1,7 @@
 use super::piece_move::PieceMove;
 use super::{piece_move::MoveRules, InvalidFormatError};
 
+#[derive(Debug)]
 pub struct Piece {
     pub name: String,
     pub image_key: String,
@@ -38,7 +39,9 @@ impl Piece {
             Ok(MoveRules::PawnFirst) => self
                 .move_set
                 .push(PieceMove::new_special(MoveRules::PawnFirst)),
-            Ok(MoveRules::Castle) => self.move_set.push(PieceMove::new_special(MoveRules::Run)),
+            Ok(MoveRules::Castle) => self
+                .move_set
+                .push(PieceMove::new_special(MoveRules::Castle)),
             Ok(_) => return Err(InvalidFormatError::new(0, special)),
             Err(_) => return Err(InvalidFormatError::new(0, special)),
         }

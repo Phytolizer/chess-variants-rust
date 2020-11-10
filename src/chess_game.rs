@@ -31,6 +31,8 @@ impl<'tc, C> ChessGame<'tc, C> {
 
     pub fn load(&mut self) -> Result<(), crate::Error> {
         self.piece_catalog.generate("./chess_pieces/".to_string())?;
+        self.textures
+            .generate_piece_images("./chess_images".to_string())?;
         let mut file = fs::read_dir("./chess_boards/")?;
         // FIXME let user pick a board
         let board_file = file

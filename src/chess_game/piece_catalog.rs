@@ -1,12 +1,13 @@
-use std::io::BufRead;
-use std::io::BufReader;
-use std::{collections::HashMap, fs};
+use std::collections::HashMap;
+use std::fs;
+use std::io::{BufRead, BufReader};
 use std::{fmt::Display, fs::File};
 
 use super::{piece::Piece, InvalidFormatError};
 
+#[derive(Debug)]
 pub struct PieceCatalog {
-    catalog: HashMap<String, Piece>,
+    pub catalog: HashMap<String, Piece>,
 }
 
 impl PieceCatalog {
@@ -72,11 +73,13 @@ impl PieceCatalog {
         Ok(())
     }
 
-    pub fn get_piece(&self, piece_name: String) -> Result<&Piece, crate::Error> {
+    pub fn get_piece(&self, piece_name: &str) -> Result<&Piece, crate::Error> {
         let out = self
             .catalog
-            .get(&piece_name)
-            .ok_or_else(|| PieceNotFoundError { name: piece_name })?;
+            .get(piece_name)
+            .ok_or_else(|| PieceNotFoundError {
+                name: piece_name.to_string(),
+            })?;
         Ok(out)
     }
 }
