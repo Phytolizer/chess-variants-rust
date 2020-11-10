@@ -1,13 +1,10 @@
-use std::fs::DirEntry;
-use std::fs::File;
-use std::io::BufRead;
-use std::io::BufReader;
-
 use sdl2::pixels::Color;
+use std::{fs::DirEntry, fs::File, io::BufRead, io::BufReader};
 
+use super::board_space::BoardSpace;
 use super::game_piece::GamePiece;
 use super::piece_catalog::PieceCatalog;
-use super::{board_space::BoardSpace, InvalidFormatError};
+use super::InvalidFormatError;
 
 pub struct Board {
     pub name: String,

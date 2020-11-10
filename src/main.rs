@@ -1,20 +1,18 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use gfx::Button;
-use gfx::Widgety;
-
-use sdl2::pixels::Color;
-use sdl2::render::BlendMode;
-use sdl2::render::Canvas;
-use sdl2::render::Texture;
-use sdl2::video::Window;
-use sdl2::{event::Event::Quit, render::TextureValueError};
-use sdl2::{event::Event::RenderTargetsReset, render::TargetRenderError};
-use sdl_error::{SdlError, ToSdl};
-
 mod chess_game;
 mod gfx;
 mod sdl_error;
+
+use sdl2::{
+    event::Event::{Quit, RenderTargetsReset},
+    pixels::Color,
+    render::{BlendMode, Canvas, TargetRenderError, Texture, TextureValueError},
+    video::Window,
+};
+use sdl_error::{SdlError, ToSdl};
+
+use gfx::{Button, Widgety};
 
 fn render_texture(t: &mut Texture, canvas: &mut Canvas<Window>) -> Result<(), SdlError> {
     canvas.with_texture_canvas(t, |c| {
@@ -147,6 +145,6 @@ pub enum Error {
 
     #[error(transparent)]
     UninitializedTextureRegistry(
-        #[from] chess_game::chess_textures::UninitializedTextureRegistryError,
+        #[from] chess_game::texture_registry::UninitializedTextureRegistryError,
     ),
 }

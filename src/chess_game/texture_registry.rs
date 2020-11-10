@@ -1,14 +1,11 @@
-use sdl2::rect::Rect;
-use std::{collections::HashMap, fmt::Display, fs, path::PathBuf};
-
+use crate::sdl_error::ToSdl;
 use sdl2::{
     image::LoadTexture,
     pixels::Color,
-    rect::Point,
+    rect::{Point, Rect},
     render::{Texture, TextureCreator, WindowCanvas},
 };
-
-use crate::sdl_error::ToSdl;
+use std::{collections::HashMap, fmt::Display, fs, path::PathBuf};
 
 use super::board::Board;
 

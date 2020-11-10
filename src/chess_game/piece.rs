@@ -1,5 +1,5 @@
-use super::piece_move::PieceMove;
-use super::{piece_move::MoveRules, InvalidFormatError};
+use super::piece_move::{MoveRules, PieceMove};
+use super::InvalidFormatError;
 
 #[derive(Debug)]
 pub struct Piece {
@@ -8,8 +8,6 @@ pub struct Piece {
     pub move_set: Vec<PieceMove>,
     pub promotions: Vec<String>,
 }
-
-// pub struct Move {}
 
 impl Piece {
     pub fn new() -> Result<Piece, crate::Error> {

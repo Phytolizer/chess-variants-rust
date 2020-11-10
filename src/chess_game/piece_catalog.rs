@@ -1,9 +1,12 @@
-use std::collections::HashMap;
-use std::fs;
-use std::io::{BufRead, BufReader};
-use std::{fmt::Display, fs::File};
+use std::{
+    collections::HashMap,
+    fmt::Display,
+    fs::{self, File},
+    io::{BufRead, BufReader},
+};
 
-use super::{piece::Piece, InvalidFormatError};
+use super::InvalidFormatError;
+use super::piece::Piece;
 
 #[derive(Debug)]
 pub struct PieceCatalog {

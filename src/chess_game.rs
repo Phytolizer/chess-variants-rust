@@ -1,31 +1,26 @@
 mod board;
 mod board_space;
-pub(crate) mod chess_textures;
 mod game_piece;
-mod new_piece;
 mod piece;
 pub(crate) mod piece_catalog;
 mod piece_move;
+pub(crate) mod texture_registry;
 
+use sdl2::render::TextureCreator;
 use std::{fmt::Display, fs};
 
-use board::Board;
-use chess_textures::TextureRegistry;
-use piece_catalog::PieceCatalog;
-use sdl2::render::TextureCreator;
-
 pub struct ChessGame<'tc, C> {
-    pub piece_catalog: PieceCatalog,
-    pub board: Board,
-    pub textures: TextureRegistry<'tc, C>,
+    pub piece_catalog: piece_catalog::PieceCatalog,
+    pub board: board::Board,
+    pub textures: texture_registry::TextureRegistry<'tc, C>,
 }
 
 impl<'tc, C> ChessGame<'tc, C> {
     pub fn new(texture_creator: &'tc TextureCreator<C>) -> Result<ChessGame<'tc, C>, crate::Error> {
         Ok(ChessGame {
-            piece_catalog: PieceCatalog::new()?,
-            board: Board::new()?,
-            textures: TextureRegistry::new(texture_creator),
+            piece_catalog: piece_catalog::PieceCatalog::new()?,
+            board: board::Board::new()?,
+            textures: texture_registry::TextureRegistry::new(texture_creator),
         })
     }
 
