@@ -1,17 +1,38 @@
-pub(crate) enum PieceMove {
-    Leap { forward: u32, left: u32 },
-    Kill { forward: u32, left: u32 },
-    Run { forward: u32, left: u32 },
+use enum_derive::enum_derive_util;
+use enum_derive::EnumFromStr;
+use macro_attr::macro_attr;
+use macro_attr::macro_attr_impl;
+
+pub struct PieceMove {
+    forward: i32,
+    left: i32,
+    rules: MoveRules,
+}
+
+macro_attr! {
+#[derive(EnumFromStr!)]
+pub enum MoveRules {
+    Leap,
+    Kill,
+    Run,
+    PawnFirst,
+    Castle,
+}
 }
 
 impl PieceMove {
-    pub fn new_leap(forward: u32, left: u32) -> Self {
-        Self::Leap { forward, left }
+    pub fn new(forward: i32, left: i32, rules: MoveRules) -> Self {
+        Self {
+            forward,
+            left,
+            rules,
+        }
     }
-    pub fn new_kill(forward: u32, left: u32) -> Self {
-        Self::Kill { forward, left }
-    }
-    pub fn new_run(forward: u32, left: u32) -> Self {
-        Self::Run { forward, left }
+    pub fn new_special(rules: MoveRules) -> Self {
+        Self {
+            forward: 0,
+            left: 0,
+            rules,
+        }
     }
 }

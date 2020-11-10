@@ -7,5 +7,10 @@ Leap: 0 1
 Kill: 1 1
 Kill: -1 1
 ----------------------------
-Special: 0 2 first
+Special: PawnFirst
+----------------------------
+Promotion: Queen
+Promotion: Rook
+Promotion: Bishop
+Promotion: Knight
 ----------------------------

@@ -5,23 +5,23 @@ Size: 8 8
 Player: white
 Player: black
 ----------------------------
-- Disabled: a 7
+- Disabled: 1 7
 ----------------------------
-Piece: a 1 white rook
-Piece: b 1 white knight
-Piece: c 1 white bishop
-Piece: d 1 white queen
-Piece: e 1 white king
-Piece: f 1 white bishop
-Piece: g 1 white knight
-Piece: h 1 white rook
+Piece: 1 1 white Rook
+Piece: 2 1 white Knight
+Piece: 3 1 white Bishop
+Piece: 4 1 white Queen
+Piece: 5 1 white King
+Piece: 6 1 white Bishop
+Piece: 7 1 white Knight
+Piece: 8 1 white Rook
 ----------------------------
-Piece: a 8 black rook
-Piece: b 8 black knight
-Piece: c 8 black bishop
-Piece: d 8 black queen
-Piece: e 8 black king
-Piece: f 8 black bishop
-Piece: g 8 black knight
-Piece: h 8 black rook
+Piece: 1 8 black Rook
+Piece: 2 8 black Knight
+Piece: 3 8 black Bishop
+Piece: 4 8 black Queen
+Piece: 5 8 black King
+Piece: 6 8 black Bishop
+Piece: 7 8 black Knight
+Piece: 8 8 black Rook
 ----------------------------

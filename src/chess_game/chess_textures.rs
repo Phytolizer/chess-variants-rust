@@ -1,4 +1,5 @@
-use std::collections::HashMap;
+use sdl2::rect::Rect;
+use std::{collections::HashMap, fmt::Display};
 
 use sdl2::{
     pixels::Color,
@@ -6,12 +7,16 @@ use sdl2::{
     render::{Texture, TextureCreator, WindowCanvas},
 };
 
-use super::board_space::BoardSpace;
+use crate::sdl_error::ToSdl;
+
+use super::board::Board;
+use super::piece_catalog::PieceCatalog;
 
 pub struct TextureRegistry<'tc, C> {
-    texture_creator: &'tc TextureCreator<C>,
-    board_texture: Option<Texture<'tc>>,
-    pieces: HashMap<String, Texture<'tc>>,
+    pub texture_creator: &'tc TextureCreator<C>,
+    pub board_texture: Option<Texture<'tc>>,
+    pub pieces: HashMap<String, Texture<'tc>>,
+    pub area: Rect,
 }
 
 impl<'tc, C> TextureRegistry<'tc, C> {
@@ -20,32 +25,67 @@ impl<'tc, C> TextureRegistry<'tc, C> {
             texture_creator,
             board_texture: None,
             pieces: HashMap::new(),
+            area: Rect::new(0, 0, 0, 0),
         }
     }
 
     pub fn render_board(
         &mut self,
         canvas: &mut WindowCanvas,
-        spaces: &Vec<BoardSpace>,
-        board_width: u32,
-        board_height: u32,
+        board: &Board,
     ) -> Result<(), crate::Error> {
-        let board_texture = self.texture_creator.create_texture_target(
+        let mut board_texture = self.texture_creator.create_texture_target(
             canvas.default_pixel_format(),
-            board_width,
-            board_height,
+            board.width,
+            board.height,
         )?;
-        canvas.with_texture_canvas(&mut board_texture, |c| {
-            canvas.set_draw_color(Color::BLACK);
-            canvas.clear();
-            for space in spaces {
+        self.area = Rect::new(0, 0, board.width, board.height); // FIXME add offset
+        canvas.with_texture_canvas(&mut board_texture, |c: &mut WindowCanvas| {
+            c.set_draw_color(Color::BLACK);
+            c.clear();
+            for space in &board.grid {
                 if !space.is_active {
                     continue;
                 }
-                canvas.set_draw_color(space.color);
-                canvas.draw_point(Point::new());
+                c.set_draw_color(space.color);
+                c.draw_point(Point::new(
+                    space.horz_position as i32,
+                    space.vert_position as i32,
+                ))
+                // FIXME FIXME FIXME
+                .unwrap();
             }
-        });
+        })?;
+        self.board_texture = Some(board_texture);
+        Ok(())
+    }
+
+    pub fn render(
+        &self,
+        canvas: &mut WindowCanvas,
+        board: &Board,
+        pieces: &PieceCatalog,
+    ) -> Result<(), crate::Error> {
+        canvas
+            .copy(
+                self.board_texture
+                    .as_ref()
+                    .ok_or_else(|| UninitializedTextureRegistryError {})?,
+                None,
+                Some(self.area),
+            )
+            .sdl_error()?;
         Ok(())
     }
 }
+
+#[derive(Debug)]
+pub struct UninitializedTextureRegistryError {}
+
+impl Display for UninitializedTextureRegistryError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Uninitialized texture registry")
+    }
+}
+
+impl std::error::Error for UninitializedTextureRegistryError {}

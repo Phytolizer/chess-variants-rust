@@ -3,6 +3,8 @@ use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
 
+use sdl2::pixels::Color;
+
 use super::game_piece::GamePiece;
 use super::piece_catalog::PieceCatalog;
 use super::{board_space::BoardSpace, InvalidFormatError};
@@ -10,6 +12,8 @@ use super::{board_space::BoardSpace, InvalidFormatError};
 pub struct Board {
     pub name: String,
     pub grid: Vec<BoardSpace>,
+    pub width: u32,
+    pub height: u32,
     pub players: Vec<String>, // TODO: Enum?
     pub game_pieces: Vec<GamePiece>,
     pub dead_pieces: Vec<GamePiece>,
@@ -23,6 +27,8 @@ impl Board {
             players: vec![],
             game_pieces: vec![],
             dead_pieces: vec![],
+            width: 0,
+            height: 0,
         })
     }
 
@@ -36,15 +42,32 @@ impl Board {
             let mut line_num = 1;
             for line in reader.lines() {
                 let line = line?;
-                if line.starts_with("-") {
+                if line.starts_with('-') {
                     continue;
                 } else if line.starts_with("Name") {
                     // Name: Classic Chess
                     self.name = line;
                 } else if line.starts_with("Size") {
                     // Size: 8 8
-                    let horz_size = line;
-                    let vert_size = line;
+                    let mut line_iter = line.split_whitespace().skip(1);
+                    self.width = line_iter
+                        .next()
+                        .ok_or_else(|| InvalidFormatError::new(line_num, line.clone()))?
+                        .parse()?;
+                    self.height = line_iter
+                        .next()
+                        .ok_or_else(|| InvalidFormatError::new(line_num, line.clone()))?
+                        .parse()?;
+                    for i in 0..self.width {
+                        for j in 0..self.height {
+                            let color = if i % 2 == j % 2 {
+                                Color::BLACK
+                            } else {
+                                Color::WHITE
+                            };
+                            self.grid.push(BoardSpace::new(i, j, color)?);
+                        }
+                    }
                 // Generate blank board_space to self.grid
                 } else if line.starts_with("Player") {
                     // Players: white
@@ -52,34 +75,35 @@ impl Board {
                 } else if line.starts_with("Disabled") {
                     // Update board_space at location in grid and disable
                 } else if line.starts_with("Piece") {
-                    let line = line.split_whitespace().take(1);
-                    let horz_pos = line
+                    let mut line_iter = line.split_whitespace().skip(1);
+                    let horz_pos = line_iter
                         .next()
-                        .ok_or_else(|| InvalidFormatError::new(line_num))?
-                        .chars()
-                        .next()
-                        .unwrap();
-                    let vert_pos = line
-                        .next()
-                        .ok_or_else(|| InvalidFormatError::new(line_num))?
+                        .ok_or_else(|| InvalidFormatError::new(line_num, line.clone()))?
                         .parse()?;
-                    let team_name = line
+                    let vert_pos = line_iter
                         .next()
-                        .ok_or_else(|| InvalidFormatError::new(line_num))?
+                        .ok_or_else(|| InvalidFormatError::new(line_num, line.clone()))?
+                        .parse()?;
+                    let team_name = line_iter
+                        .next()
+                        .ok_or_else(|| InvalidFormatError::new(line_num, line.clone()))?
                         .to_string();
                     let piece = chess_pieces.get_piece(
-                        line.next()
-                            .ok_or_else(|| InvalidFormatError::new(line_num))?
+                        line_iter
+                            .next()
+                            .ok_or_else(|| InvalidFormatError::new(line_num, line.clone()))?
                             .to_string(),
                     )?;
-                    self.game_pieces
-                        .push(GamePiece::new(piece.name, team_name, horz_pos, vert_pos)?);
+                    self.game_pieces.push(GamePiece::new(
+                        piece.name.clone(),
+                        team_name,
+                        horz_pos,
+                        vert_pos,
+                    )?);
                 }
                 line_num += 1;
             }
         }
         Ok(())
     }
-
-    pub fn update(&mut self) {}
 }

@@ -22,37 +22,51 @@ impl PieceCatalog {
             let file = path?;
             if file.file_type()?.is_file() && file.file_name().to_string_lossy().ends_with(".txt") {
                 let reader = BufReader::new(File::open(file.path())?);
-                let piece = Piece::new()?;
+                let mut piece = Piece::new()?;
                 let mut line_num = 1;
                 for line in reader.lines() {
                     let line = line?;
-                    if line.starts_with("-") {
+                    if line.starts_with('-') {
                         continue;
                     } else if line.starts_with("Name") {
                         piece.name = line
-                            .splitn(1, ' ')
+                            .split_whitespace()
                             .nth(1)
-                            .ok_or_else(|| InvalidFormatError::new(line_num))?
+                            .ok_or_else(|| InvalidFormatError::new(line_num, line.clone()))?
                             .to_string();
                     } else if line.starts_with("Image") {
                         piece.image_key = line
-                            .splitn(1, ' ')
+                            .split_whitespace()
                             .nth(1)
-                            .ok_or_else(|| InvalidFormatError::new(line_num))?
+                            .ok_or_else(|| InvalidFormatError::new(line_num, line.clone()))?
                             .to_string();
                     } else if line.starts_with("Leap") {
-                        let (forward, left) = parse_move(line, line_num)?;
+                        let (forward, left) = parse_move(line)?;
                         piece.add_leap(forward, left);
                     } else if line.starts_with("Kill") {
-                        let (forward, left) = parse_move(line, line_num)?;
+                        let (forward, left) = parse_move(line)?;
                         piece.add_kill(forward, left);
                     } else if line.starts_with("Run") {
-                        let (forward, left) = parse_move(line, line_num)?;
+                        let (forward, left) = parse_move(line)?;
                         piece.add_run(forward, left);
+                    } else if line.starts_with("Special") {
+                        let special_move = line
+                            .split_whitespace()
+                            .nth(1)
+                            .ok_or_else(|| InvalidFormatError::new(line_num, line.clone()))?
+                            .to_string();
+                        piece.add_special(special_move)?;
+                    } else if line.starts_with("Promotion") {
+                        let promotion_piece = line
+                            .split_whitespace()
+                            .nth(1)
+                            .ok_or_else(|| InvalidFormatError::new(line_num, line.clone()))?
+                            .to_string();
+                        piece.promotions.push(promotion_piece);
                     }
                     line_num += 1;
                 }
-                self.catalog.insert(piece.name, piece);
+                self.catalog.insert(piece.name.clone(), piece);
             }
         }
         Ok(())
@@ -67,13 +81,8 @@ impl PieceCatalog {
     }
 }
 
-fn parse_move(line: String, line_num: usize) -> Result<(u32, u32), crate::Error> {
-    let mv = line
-        .splitn(1, ' ')
-        .nth(1)
-        .ok_or_else(|| InvalidFormatError::new(line_num))?
-        .split(' ')
-        .collect::<Vec<_>>();
+fn parse_move(line: String) -> Result<(i32, i32), crate::Error> {
+    let mv = line.split_whitespace().skip(1).collect::<Vec<_>>();
     Ok((mv[0].parse()?, mv[1].parse()?))
 }
 
