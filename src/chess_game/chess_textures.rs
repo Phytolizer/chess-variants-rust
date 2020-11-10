@@ -32,6 +32,7 @@ impl<'tc, C> TextureRegistry<'tc, C> {
     pub fn render_board(
         &mut self,
         canvas: &mut WindowCanvas,
+        canvas_size: (u32, u32),
         board: &Board,
     ) -> Result<(), crate::Error> {
         let mut board_texture = self.texture_creator.create_texture_target(
@@ -39,7 +40,21 @@ impl<'tc, C> TextureRegistry<'tc, C> {
             board.width,
             board.height,
         )?;
-        self.area = Rect::new(0, 0, board.width, board.height); // FIXME add offset
+
+        let squares_size = if canvas_size.0 / board.width < canvas_size.1 / board.height {
+            canvas_size.0 / board.width
+        } else {
+            canvas_size.1 / board.height
+        };
+
+        let off_horz = ((canvas_size.0 - board.width * squares_size) / 2) as i32;
+        let off_vert = ((canvas_size.1 - board.height * squares_size) / 2) as i32;
+        let size_horz = board.width * squares_size;
+        let size_vert = board.height * squares_size;
+
+        dbg!((off_horz, off_vert, canvas_size));
+
+        self.area = Rect::new(off_horz, off_vert, size_horz, size_vert); // FIXME add offset
         canvas.with_texture_canvas(&mut board_texture, |c: &mut WindowCanvas| {
             c.set_draw_color(Color::BLACK);
             c.clear();

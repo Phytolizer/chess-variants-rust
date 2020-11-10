@@ -54,11 +54,14 @@ fn main() {
 
         let mut event_pump = sdl.event_pump().sdl_error()?;
 
+        let mut width = 800u32;
+        let mut height = 600u32;
+
         let mut chess_game = chess_game::ChessGame::new(&texture_creator)?;
         chess_game.load()?;
         chess_game
             .textures
-            .render_board(&mut canvas, &chess_game.board)?;
+            .render_board(&mut canvas, (width, height), &chess_game.board)?;
 
         let mut test_button = Button::new();
         test_button
@@ -78,10 +81,24 @@ fn main() {
                     Quit { .. } => break 'run,
                     RenderTargetsReset { .. } => {
                         render_texture(&mut test_texture, &mut canvas)?;
-                        chess_game
-                            .textures
-                            .render_board(&mut canvas, &chess_game.board)?;
+                        chess_game.textures.render_board(
+                            &mut canvas,
+                            (width, height),
+                            &chess_game.board,
+                        )?;
                     }
+                    sdl2::event::Event::Window { win_event, .. } => match win_event {
+                        sdl2::event::WindowEvent::SizeChanged(w, h) => {
+                            width = w as u32;
+                            height = h as u32;
+                            chess_game.textures.render_board(
+                                &mut canvas,
+                                (width, height),
+                                &chess_game.board,
+                            )?;
+                        }
+                        _ => {}
+                    },
                     _ => {}
                 }
                 test_button.handle_event(e)?;
