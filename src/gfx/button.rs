@@ -128,6 +128,7 @@ impl ButtonBuilder {
 }
 
 impl Button {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new() -> ButtonBuilder {
         ButtonBuilder {
             widget: Widget::new(None),
