@@ -1,11 +1,12 @@
 use crate::sdl_error::ToSdl;
+use parking_lot::RwLock;
 use sdl2::{
     image::LoadTexture,
     pixels::Color,
     rect::{Point, Rect},
     render::{Texture, TextureCreator, WindowCanvas},
 };
-use std::{collections::HashMap, fmt::Display, fs, path::PathBuf};
+use std::{collections::HashMap, fmt::Display, fs, path::PathBuf, rc::Rc};
 
 use super::board::Board;
 
@@ -34,12 +35,12 @@ impl<'tc, C> TextureRegistry<'tc, C> {
 
     pub fn render_board(
         &mut self,
-        canvas: &mut WindowCanvas,
+        canvas: Rc<RwLock<WindowCanvas>>,
         canvas_size: (u32, u32),
         board: &Board,
     ) -> Result<(), crate::Error> {
         let mut board_texture = self.texture_creator.create_texture_target(
-            canvas.default_pixel_format(),
+            canvas.read().default_pixel_format(),
             board.width,
             board.height,
         )?;
@@ -56,22 +57,24 @@ impl<'tc, C> TextureRegistry<'tc, C> {
         let size_vert = board.height * self.squares_size;
 
         self.area = Rect::new(self.off_horz, self.off_vert, size_horz, size_vert); // FIXME add offset
-        canvas.with_texture_canvas(&mut board_texture, |c: &mut WindowCanvas| {
-            c.set_draw_color(Color::BLACK);
-            c.clear();
-            for space in &board.grid {
-                if !space.is_active {
-                    continue;
+        canvas
+            .write()
+            .with_texture_canvas(&mut board_texture, |c: &mut WindowCanvas| {
+                c.set_draw_color(Color::BLACK);
+                c.clear();
+                for space in &board.grid {
+                    if !space.is_active {
+                        continue;
+                    }
+                    c.set_draw_color(space.color);
+                    c.draw_point(Point::new(
+                        space.horz_position as i32,
+                        space.vert_position as i32,
+                    ))
+                    // FIXME FIXME FIXME
+                    .unwrap();
                 }
-                c.set_draw_color(space.color);
-                c.draw_point(Point::new(
-                    space.horz_position as i32,
-                    space.vert_position as i32,
-                ))
-                // FIXME FIXME FIXME
-                .unwrap();
-            }
-        })?;
+            })?;
         self.board_texture = Some(board_texture);
         Ok(())
     }
@@ -97,8 +100,13 @@ impl<'tc, C> TextureRegistry<'tc, C> {
         Ok(())
     }
 
-    pub fn render(&self, canvas: &mut WindowCanvas, board: &Board) -> Result<(), crate::Error> {
+    pub fn render(
+        &self,
+        canvas: Rc<RwLock<WindowCanvas>>,
+        board: &Board,
+    ) -> Result<(), crate::Error> {
         canvas
+            .write()
             .copy(
                 self.board_texture
                     .as_ref()
@@ -119,6 +127,7 @@ impl<'tc, C> TextureRegistry<'tc, C> {
                 self.squares_size,
             );
             canvas
+                .write()
                 .copy(piece_texture, None, Some(piece_area))
                 .sdl_error()?;
         }

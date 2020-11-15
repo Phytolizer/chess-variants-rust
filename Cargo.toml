@@ -12,6 +12,7 @@ lazy_static = "1.4"
 thiserror = "1.0"
 enum_derive = "0.1"
 macro-attr = "0.2"
+parking_lot = "0.11"
 
 [dependencies.sdl2]
 version = "0.34"
