@@ -1,0 +1,43 @@
+----------------------------
+Name: Classic Chess
+Size: 8 8
+----------------------------
+Player: white
+Player: black
+----------------------------
+- Disabled: 1 7
+----------------------------
+Piece: 1 1 white Rook
+Piece: 2 1 white Knight
+Piece: 3 1 white Bishop
+Piece: 4 1 white Queen
+Piece: 5 1 white King
+Piece: 6 1 white Bishop
+Piece: 7 1 white Knight
+Piece: 8 1 white Rook
+Piece: 1 2 white Pawn
+Piece: 2 2 white Pawn
+Piece: 3 2 white Pawn
+Piece: 4 2 white Pawn
+Piece: 5 2 white Pawn
+Piece: 6 2 white Pawn
+Piece: 7 2 white Pawn
+Piece: 8 2 white Pawn
+----------------------------
+Piece: 1 8 black Rook
+Piece: 2 8 black Knight
+Piece: 3 8 black Bishop
+Piece: 4 8 black Queen
+Piece: 5 8 black King
+Piece: 6 8 black Bishop
+Piece: 7 8 black Knight
+Piece: 8 8 black Rook
+Piece: 1 7 black Pawn
+Piece: 2 7 black Pawn
+Piece: 3 7 black Pawn
+Piece: 4 7 black Pawn
+Piece: 5 7 black Pawn
+Piece: 6 7 black Pawn
+Piece: 7 7 black Pawn
+Piece: 8 7 black Pawn
+----------------------------

@@ -1,48 +1,24 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use gfx::Button;
-use gfx::Widgety;
-
-use sdl2::event::Event::Quit;
-use sdl2::event::Event::RenderTargetsReset;
-use sdl2::pixels::Color;
-use sdl2::rect::Rect;
-use sdl2::render::BlendMode;
-use sdl2::render::Canvas;
-use sdl2::render::{Texture, TextureCreator};
-use sdl2::video::Window;
-use sdl2::video::WindowContext;
-use sdl_error::{SdlError, ToSdl};
-
-use std::fs;
-
-mod chess;
+mod chess_game;
 mod gfx;
 mod sdl_error;
+
+use sdl2::{
+    event::Event::{Quit, RenderTargetsReset},
+    pixels::Color,
+    render::{BlendMode, Canvas, TargetRenderError, Texture, TextureValueError},
+    video::Window,
+};
+use sdl_error::{SdlError, ToSdl};
+
+use gfx::{Button, Widgety};
 
 fn render_texture(t: &mut Texture, canvas: &mut Canvas<Window>) -> Result<(), SdlError> {
     canvas.with_texture_canvas(t, |c| {
         c.set_draw_color(Color::RED);
         c.clear();
     })?;
-    Ok(())
-}
-
-fn generate_piece_factory_from_files<'tc>(
-    path: String,
-    settings: &mut chess::ChessSettings<'tc>,
-    texture_creator: &'tc TextureCreator<WindowContext>,
-) -> Result<(), Error> {
-    let dir = fs::read_dir(path)?;
-    settings.factory.clear();
-    for file in dir {
-        let file = file?;
-        if file.file_type()?.is_file() && file.file_name().to_string_lossy().ends_with(".txt") {
-            settings
-                .factory
-                .push(chess::PieceFactory::new(&file, texture_creator)?);
-        }
-    }
     Ok(())
 }
 
@@ -76,24 +52,14 @@ fn main() {
 
         let mut event_pump = sdl.event_pump().sdl_error()?;
 
-        let mut chess_game: chess::Chess<WindowContext> = chess::Chess::new(
-            &texture_creator,
-            canvas.window().size().0,
-            canvas.window().size().1,
-        )
-        .sdl_error()?;
-        chess_game.grid.redraw(
-            canvas.window().size().0,
-            canvas.window().size().1,
-            &mut chess_game.settings,
-            &mut canvas,
-        )?;
-        generate_piece_factory_from_files(
-            "./chess_pieces".to_string(),
-            &mut chess_game.settings,
-            &texture_creator,
-        )?;
-        chess_game.generate_pieces();
+        let mut width = 800u32;
+        let mut height = 600u32;
+
+        let mut chess_game = chess_game::ChessGame::new(&texture_creator)?;
+        chess_game.load()?;
+        chess_game
+            .textures
+            .render_board(&mut canvas, (width, height), &chess_game.board)?;
 
         let mut test_button = Button::new();
         test_button
@@ -113,13 +79,24 @@ fn main() {
                     Quit { .. } => break 'run,
                     RenderTargetsReset { .. } => {
                         render_texture(&mut test_texture, &mut canvas)?;
-                        chess_game.grid.redraw(
-                            canvas.window().size().0,
-                            canvas.window().size().1,
-                            &mut chess_game.settings,
+                        chess_game.textures.render_board(
                             &mut canvas,
+                            (width, height),
+                            &chess_game.board,
                         )?;
                     }
+                    sdl2::event::Event::Window { win_event, .. } => match win_event {
+                        sdl2::event::WindowEvent::SizeChanged(w, h) => {
+                            width = w as u32;
+                            height = h as u32;
+                            chess_game.textures.render_board(
+                                &mut canvas,
+                                (width, height),
+                                &chess_game.board,
+                            )?;
+                        }
+                        _ => {}
+                    },
                     _ => {}
                 }
                 test_button.handle_event(e)?;
@@ -127,20 +104,8 @@ fn main() {
 
             canvas.set_draw_color(Color::RGB(0x20, 0x20, 0x20));
             canvas.clear();
-            canvas
-                .copy(
-                    &chess_game.grid.texture,
-                    None,
-                    Rect::new(
-                        chess_game.grid.off_horz,
-                        chess_game.grid.off_vert,
-                        chess_game.grid.size_horz,
-                        chess_game.grid.size_vert,
-                    ),
-                )
-                .sdl_error()?;
+            chess_game.textures.render(&mut canvas, &chess_game.board)?;
             test_button.draw(&mut canvas)?;
-            chess_game.display_pieces(&mut canvas)?;
             canvas.present();
         }
 
@@ -161,8 +126,25 @@ pub enum Error {
     Sdl(#[from] SdlError),
 
     #[error(transparent)]
+    TextureValue(#[from] TextureValueError),
+
+    #[error(transparent)]
+    TargetRender(#[from] TargetRenderError),
+
+    #[error(transparent)]
     Io(#[from] std::io::Error),
 
     #[error(transparent)]
     ParseInt(#[from] std::num::ParseIntError),
+
+    #[error(transparent)]
+    InvalidFileFormat(#[from] chess_game::InvalidFormatError),
+
+    #[error(transparent)]
+    PieceNotFound(#[from] chess_game::piece_catalog::PieceNotFoundError),
+
+    #[error(transparent)]
+    UninitializedTextureRegistry(
+        #[from] chess_game::texture_registry::UninitializedTextureRegistryError,
+    ),
 }
