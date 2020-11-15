@@ -5,8 +5,8 @@ use std::{
     io::{BufRead, BufReader},
 };
 
-use super::InvalidFormatError;
 use super::piece::Piece;
+use super::InvalidFormatError;
 
 #[derive(Debug)]
 pub struct PieceCatalog {
