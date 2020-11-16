@@ -33,10 +33,10 @@ impl<'tc, C> EventHandler<'tc, C> {
     pub fn handle_event(&mut self, event: &Event) -> Result<(), crate::Error> {
         match event {
             Event::RenderTargetsReset { .. } => {
-                self.chess_game.write().textures.render_board(
+                self.chess_game.write().render_board(
                     self.canvas.clone(),
-                    (self.width as u32, self.height as u32),
-                    &self.chess_game.read().board,
+                    self.width as u32,
+                    self.height as u32,
                 )?;
             }
             Event::Window { win_event, .. } => match win_event {
