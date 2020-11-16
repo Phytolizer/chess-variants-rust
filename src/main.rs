@@ -48,11 +48,9 @@ fn main() {
 
         let chess_game = Rc::new(RwLock::new(chess_game::ChessGame::new(&texture_creator)?));
         chess_game.write().load()?;
-        chess_game.write().textures.render_board(
-            canvas.clone(),
-            (width, height),
-            &chess_game.read().board,
-        )?;
+        chess_game
+            .write()
+            .render_board(canvas.clone(), width, height)?;
 
         let mut test_button = Button::new();
         test_button
@@ -84,7 +82,7 @@ fn main() {
             canvas.write().set_draw_color(Color::RGB(0x20, 0x20, 0x20));
             canvas.write().clear();
             chess_game
-                .write()
+                .read()
                 .textures
                 .render(canvas.clone(), &chess_game.read().board)?;
             event_handler.draw_widgets()?;

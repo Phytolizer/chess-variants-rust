@@ -43,10 +43,10 @@ impl<'tc, C> EventHandler<'tc, C> {
                 sdl2::event::WindowEvent::SizeChanged(w, h) => {
                     self.width = *w as u32;
                     self.height = *h as u32;
-                    self.chess_game.write().textures.render_board(
+                    self.chess_game.write().render_board(
                         self.canvas.clone(),
-                        (self.width as u32, self.height as u32),
-                        &self.chess_game.read().board,
+                        self.width as u32,
+                        self.height as u32,
                     )?;
                 }
                 _ => {}
