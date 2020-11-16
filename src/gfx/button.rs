@@ -1,9 +1,12 @@
+use std::rc::Rc;
+
 use super::Widget;
 use super::Widgety;
 
+use parking_lot::RwLock;
 use sdl2::event::Event;
-use sdl2::mouse::MouseButton;
 use sdl2::pixels::Color;
+use sdl2::{mouse::MouseButton, render::WindowCanvas};
 
 use crate::{sdl_error::ToSdl, Error};
 
@@ -23,10 +26,8 @@ pub struct Button {
 }
 
 impl Widgety for Button {
-    fn draw<RT>(&self, canvas: &mut sdl2::render::Canvas<RT>) -> Result<(), Error>
-    where
-        RT: sdl2::render::RenderTarget,
-    {
+    fn draw(&self, canvas: Rc<RwLock<WindowCanvas>>) -> Result<(), Error> {
+        let mut canvas = canvas.write();
         canvas.set_draw_color(self.widget.color);
         canvas.fill_rect(self.widget.rect).sdl_error()?;
         canvas.set_draw_color(Color::BLACK);
@@ -44,11 +45,11 @@ impl Widgety for Button {
         }
         Ok(())
     }
-    fn handle_event(&mut self, event: Event) -> Result<(), Error> {
+    fn handle_event(&mut self, event: &Event) -> Result<(), Error> {
         match event {
             Event::MouseMotion { x, y, .. } => {
                 if self.state != State::Pressed {
-                    if self.widget.rect.contains_point((x, y)) {
+                    if self.widget.rect.contains_point((*x, *y)) {
                         if self.state == State::Normal {
                             self.state = State::Hovered;
                         }
@@ -58,15 +59,15 @@ impl Widgety for Button {
                 }
             }
             Event::MouseButtonDown { mouse_btn, .. } => {
-                if self.state == State::Hovered && mouse_btn == MouseButton::Left {
+                if self.state == State::Hovered && *mouse_btn == MouseButton::Left {
                     self.state = State::Pressed;
                 }
             }
             Event::MouseButtonUp {
                 mouse_btn, x, y, ..
             } => {
-                if self.state == State::Pressed && mouse_btn == MouseButton::Left {
-                    if self.widget.rect.contains_point((x, y)) {
+                if self.state == State::Pressed && *mouse_btn == MouseButton::Left {
+                    if self.widget.rect.contains_point((*x, *y)) {
                         self.state = State::Hovered;
                         (self.on_click)()?;
                     } else {
@@ -128,6 +129,7 @@ impl ButtonBuilder {
 }
 
 impl Button {
+    #[allow(clippy::new_ret_no_self)]
     pub fn new() -> ButtonBuilder {
         ButtonBuilder {
             widget: Widget::new(None),
