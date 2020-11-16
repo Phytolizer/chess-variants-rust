@@ -15,7 +15,7 @@ use sdl2::{
 use sdl_error::{SdlError, ToSdl};
 use std::rc::Rc;
 
-use gfx::{Button, Widgety};
+use gfx::Button;
 
 fn main() {
     let result = (|| -> Result<(), Error> {
@@ -64,11 +64,11 @@ fn main() {
             .position(100, 100)
             .size(100, 100)
             .color(Color::BLUE);
-        let mut test_button = test_button.build();
+        let test_button = test_button.build();
         let mut event_handler = EventHandler::new(
             chess_game.clone(),
             canvas.clone(),
-            &[&mut test_button],
+            vec![Box::new(test_button)],
             width,
             height,
         );
@@ -78,7 +78,6 @@ fn main() {
                 if let Quit { .. } = e {
                     break 'run;
                 }
-                test_button.handle_event(&e)?;
                 event_handler.handle_event(&e)?;
             }
 
@@ -88,7 +87,7 @@ fn main() {
                 .write()
                 .textures
                 .render(canvas.clone(), &chess_game.read().board)?;
-            test_button.draw(canvas.clone())?;
+            event_handler.draw_widgets()?;
             canvas.write().present();
         }
 

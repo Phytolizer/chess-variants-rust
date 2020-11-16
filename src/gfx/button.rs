@@ -4,9 +4,9 @@ use super::Widget;
 use super::Widgety;
 
 use parking_lot::RwLock;
-use sdl2::mouse::MouseButton;
+use sdl2::event::Event;
 use sdl2::pixels::Color;
-use sdl2::{event::Event, render::Canvas};
+use sdl2::{mouse::MouseButton, render::WindowCanvas};
 
 use crate::{sdl_error::ToSdl, Error};
 
@@ -26,10 +26,7 @@ pub struct Button {
 }
 
 impl Widgety for Button {
-    fn draw<RT>(&self, canvas: Rc<RwLock<Canvas<RT>>>) -> Result<(), Error>
-    where
-        RT: sdl2::render::RenderTarget,
-    {
+    fn draw(&self, canvas: Rc<RwLock<WindowCanvas>>) -> Result<(), Error> {
         let mut canvas = canvas.write();
         canvas.set_draw_color(self.widget.color);
         canvas.fill_rect(self.widget.rect).sdl_error()?;

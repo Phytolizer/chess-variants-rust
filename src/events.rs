@@ -5,24 +5,26 @@ use sdl2::{event::Event, render::WindowCanvas};
 
 use crate::{chess_game::ChessGame, gfx::Widgety};
 
-pub struct EventHandler<'main, 'tc, C> {
+pub struct EventHandler<'tc, C> {
     chess_game: Rc<RwLock<ChessGame<'tc, C>>>,
     canvas: Rc<RwLock<WindowCanvas>>,
+    widgets: Vec<Box<dyn Widgety>>,
     width: u32,
     height: u32,
 }
 
-impl<'main, 'tc, C> EventHandler<'main, 'tc, C> {
+impl<'tc, C> EventHandler<'tc, C> {
     pub fn new(
         chess_game: Rc<RwLock<ChessGame<'tc, C>>>,
         canvas: Rc<RwLock<WindowCanvas>>,
-        widgets: &[&'main dyn Widgety],
+        widgets: Vec<Box<dyn Widgety>>,
         width: u32,
         height: u32,
     ) -> Self {
         Self {
             chess_game,
             canvas,
+            widgets,
             width,
             height,
         }
@@ -50,6 +52,16 @@ impl<'main, 'tc, C> EventHandler<'main, 'tc, C> {
                 _ => {}
             },
             _ => {}
+        }
+        for widget in &mut self.widgets {
+            widget.handle_event(event)?;
+        }
+        Ok(())
+    }
+
+    pub fn draw_widgets(&self) -> Result<(), crate::Error> {
+        for widget in &self.widgets {
+            widget.draw(self.canvas.clone())?;
         }
         Ok(())
     }

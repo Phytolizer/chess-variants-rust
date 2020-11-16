@@ -1,11 +1,9 @@
 use std::rc::Rc;
 
 use parking_lot::RwLock;
-use sdl2::event::Event;
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
-use sdl2::render::Canvas;
-use sdl2::render::RenderTarget;
+use sdl2::{event::Event, render::WindowCanvas};
 
 use crate::Error;
 
@@ -15,9 +13,7 @@ pub struct Widget {
 }
 
 pub trait Widgety {
-    fn draw<RT>(&self, canvas: Rc<RwLock<Canvas<RT>>>) -> Result<(), Error>
-    where
-        RT: RenderTarget;
+    fn draw(&self, canvas: Rc<RwLock<WindowCanvas>>) -> Result<(), Error>;
     fn handle_event(&mut self, event: &Event) -> Result<(), Error>;
 }
 
