@@ -39,8 +39,8 @@ impl<'tc, C> EventHandler<'tc, C> {
                     self.height as u32,
                 )?;
             }
-            Event::Window { win_event, .. } => match win_event {
-                sdl2::event::WindowEvent::SizeChanged(w, h) => {
+            Event::Window { win_event, .. } => {
+                if let sdl2::event::WindowEvent::SizeChanged(w, h) = win_event {
                     self.width = *w as u32;
                     self.height = *h as u32;
                     self.chess_game.write().render_board(
@@ -49,8 +49,7 @@ impl<'tc, C> EventHandler<'tc, C> {
                         self.height as u32,
                     )?;
                 }
-                _ => {}
-            },
+            }
             _ => {}
         }
         for widget in &mut self.widgets {
