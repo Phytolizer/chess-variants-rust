@@ -1,4 +1,4 @@
-use sdl2::pixels::Color;
+use sdl2::{pixels::Color, rect::Rect};
 use std::{fs::DirEntry, fs::File, io::BufRead, io::BufReader};
 
 use super::board_space::BoardSpace;
@@ -11,9 +11,12 @@ pub struct Board {
     pub grid: Vec<BoardSpace>,
     pub width: u32,
     pub height: u32,
-    pub players: Vec<String>, // TODO: Enum?
-    pub game_pieces: Vec<GamePiece>,
-    pub dead_pieces: Vec<GamePiece>,
+    pub players: Vec<String>,        // TODO: Enum?
+    pub game_pieces: Vec<GamePiece>, // Maybe this should be under grid for simplicity
+    pub dead_pieces: Vec<GamePiece>, // Maybe save the collection of MOVES and just remove dead pieces
+    pub space_size: u32,
+    pub horz_offset: i32,
+    pub vert_offset: i32,
 }
 
 impl Board {
@@ -26,6 +29,9 @@ impl Board {
             dead_pieces: vec![],
             width: 0,
             height: 0,
+            space_size: 0,
+            horz_offset: 0,
+            vert_offset: 0,
         })
     }
 
@@ -99,6 +105,50 @@ impl Board {
                     )?);
                 }
                 line_num += 1;
+            }
+        }
+        Ok(())
+    }
+
+    pub fn calculate_values(&mut self, horz_size: u32, vert_size: u32) -> Result<(), crate::Error> {
+        self.space_size = if horz_size / self.width < vert_size / self.height {
+            horz_size / self.width
+        } else {
+            vert_size / self.height
+        };
+
+        self.horz_offset = ((horz_size - self.width * self.space_size) / 2) as i32;
+        self.vert_offset = ((vert_size - self.height * self.space_size) / 2) as i32;
+        Ok(())
+    }
+
+    pub fn mouse_hover(&mut self, x: &i32, y: &i32) -> Result<(), crate::Error> {
+        for grid_space in self.grid.iter_mut() {
+            let rect = Rect::new(
+                self.horz_offset + (grid_space.horz_position * self.space_size) as i32,
+                self.vert_offset + (grid_space.vert_position * self.space_size) as i32,
+                self.space_size,
+                self.space_size,
+            );
+            if rect.contains_point((*x, *y)) {
+                grid_space.hovered = true;
+            } else {
+                grid_space.hovered = false;
+            }
+        }
+        Ok(())
+    }
+
+    pub fn mouse_left_click(&mut self) -> Result<(), crate::Error> {
+        for grid_space in self.grid.iter() {
+            if grid_space.hovered {
+                println!(
+                    "{}",
+                    "Clicked: ".to_owned()
+                        + &grid_space.horz_position.to_string()
+                        + ", "
+                        + &grid_space.vert_position.to_string()
+                );
             }
         }
         Ok(())

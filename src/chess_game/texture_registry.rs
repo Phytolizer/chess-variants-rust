@@ -15,9 +15,6 @@ pub struct TextureRegistry<'tc, C> {
     pub board_texture: Option<Texture<'tc>>,
     pub pieces: HashMap<String, Texture<'tc>>,
     pub area: Rect,
-    pub squares_size: u32,
-    pub off_horz: i32,
-    pub off_vert: i32,
 }
 
 impl<'tc, C> TextureRegistry<'tc, C> {
@@ -27,9 +24,6 @@ impl<'tc, C> TextureRegistry<'tc, C> {
             board_texture: None,
             pieces: HashMap::new(),
             area: Rect::new(0, 0, 0, 0),
-            squares_size: 0,
-            off_horz: 0,
-            off_vert: 0,
         }
     }
 
@@ -37,7 +31,7 @@ impl<'tc, C> TextureRegistry<'tc, C> {
         &mut self,
         canvas: Rc<RwLock<WindowCanvas>>,
         canvas_size: (u32, u32),
-        board: &Board,
+        board: &mut Board,
     ) -> Result<(), crate::Error> {
         let mut board_texture = self.texture_creator.create_texture_target(
             canvas.read().default_pixel_format(),
@@ -45,18 +39,12 @@ impl<'tc, C> TextureRegistry<'tc, C> {
             board.height,
         )?;
 
-        self.squares_size = if canvas_size.0 / board.width < canvas_size.1 / board.height {
-            canvas_size.0 / board.width
-        } else {
-            canvas_size.1 / board.height
-        };
+        board.calculate_values(canvas_size.0, canvas_size.1)?;
 
-        self.off_horz = ((canvas_size.0 - board.width * self.squares_size) / 2) as i32;
-        self.off_vert = ((canvas_size.1 - board.height * self.squares_size) / 2) as i32;
-        let size_horz = board.width * self.squares_size;
-        let size_vert = board.height * self.squares_size;
+        let size_horz = board.width * board.space_size;
+        let size_vert = board.height * board.space_size;
 
-        self.area = Rect::new(self.off_horz, self.off_vert, size_horz, size_vert); // FIXME add offset
+        self.area = Rect::new(board.horz_offset, board.vert_offset, size_horz, size_vert); // FIXME add offset
         canvas
             .write()
             .with_texture_canvas(&mut board_texture, |c: &mut WindowCanvas| {
@@ -121,10 +109,10 @@ impl<'tc, C> TextureRegistry<'tc, C> {
                 None => continue,
             };
             let piece_area = Rect::new(
-                self.off_horz + ((game_piece.horz_position - 1) * self.squares_size) as i32,
-                self.off_vert + ((game_piece.vert_position - 1) * self.squares_size) as i32,
-                self.squares_size,
-                self.squares_size,
+                board.horz_offset + ((game_piece.horz_position - 1) * board.space_size) as i32,
+                board.vert_offset + ((game_piece.vert_position - 1) * board.space_size) as i32,
+                board.space_size,
+                board.space_size,
             );
             canvas
                 .write()

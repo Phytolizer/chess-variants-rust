@@ -3,6 +3,7 @@ use sdl2::pixels::Color;
 pub struct BoardSpace {
     pub horz_position: u32,
     pub vert_position: u32,
+    pub hovered: bool,
     pub is_active: bool,
     pub available_to_move: bool,
     pub available_to_kill: bool,
@@ -15,6 +16,7 @@ impl BoardSpace {
         Ok(BoardSpace {
             horz_position: horz,
             vert_position: vert,
+            hovered: false,
             is_active: true,
             available_to_move: false,
             available_to_kill: false,

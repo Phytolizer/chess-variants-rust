@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use parking_lot::RwLock;
-use sdl2::{event::Event, render::WindowCanvas};
+use sdl2::{event::Event, mouse::MouseButton, rect::Rect, render::{WindowCanvas}};
 
 use crate::{chess_game::ChessGame, gfx::Widgety};
 
@@ -48,6 +48,21 @@ impl<'tc, C> EventHandler<'tc, C> {
                         self.width as u32,
                         self.height as u32,
                     )?;
+                }
+            }
+            Event::MouseMotion { x, y, .. } => {
+                self.chess_game.write().mouse_hover(x, y)?;
+            }
+            Event::MouseButtonDown { mouse_btn, .. } => if *mouse_btn == MouseButton::Left {
+                
+                self.chess_game.write().mouse_left_click()?;
+            },
+            Event::MouseButtonUp {
+                mouse_btn, x, y, ..
+            } => {
+                if *mouse_btn == MouseButton::Left {
+                    let rect = Rect::new(0, 0, 0, 0);
+                    if rect.contains_point((*x, *y)) {}
                 }
             }
             _ => {}

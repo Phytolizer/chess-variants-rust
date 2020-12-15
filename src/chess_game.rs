@@ -53,8 +53,16 @@ impl<'tc, C> ChessGame<'tc, C> {
         height: u32,
     ) -> Result<(), crate::Error> {
         self.textures
-            .render_board(canvas, (width, height), &self.board)?;
+            .render_board(canvas, (width, height), &mut self.board)?;
         Ok(())
+    }
+
+    pub fn mouse_hover(&mut self, x: &i32, y: &i32) -> Result<(), crate::Error> {
+        self.board.mouse_hover(x, y)
+    }
+
+    pub fn mouse_left_click(&mut self) -> Result<(), crate::Error> {
+        self.board.mouse_left_click()
     }
 }
 
