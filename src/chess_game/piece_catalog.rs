@@ -534,4 +534,18 @@ mod tests {
             format!("{:#?}", piece),
         );
     }
+
+    #[test]
+    fn multiple_lines_in_one() {
+        let data = "Name: King Image: King.png";
+        let tokens = PieceCatalog::lex_piece(data.as_bytes()).unwrap();
+        let piece = PieceCatalog::parse_piece(tokens.into_iter()).unwrap();
+        check(expect![[r#"
+            Piece {
+                name: "King",
+                image_key: "King.png",
+                move_set: [],
+                promotions: [],
+            }"#]], format!("{:#?}", piece));
+    }
 }
