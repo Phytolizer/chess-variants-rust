@@ -10,13 +10,13 @@ pub struct Piece {
 }
 
 impl Piece {
-    pub fn new() -> Result<Piece, crate::Error> {
-        Ok(Piece {
+    pub fn new() -> Self {
+        Piece {
             name: "".to_string(),
             image_key: "".to_string(),
             move_set: vec![],
             promotions: vec![],
-        })
+        }
     }
 
     pub fn add_leap(&mut self, forward: i32, left: i32) {

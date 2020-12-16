@@ -26,7 +26,7 @@ impl PieceCatalog {
             let file = path?;
             if file.file_type()?.is_file() && file.file_name().to_string_lossy().ends_with(".txt") {
                 let reader = BufReader::new(File::open(file.path())?);
-                let mut piece = Piece::new()?;
+                let mut piece = Piece::new();
                 let mut line_num = 1;
                 for line in reader.lines() {
                     let line = line?;
