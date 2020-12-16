@@ -2,15 +2,58 @@ use std::{
     collections::HashMap,
     fmt::Display,
     fs::{self, File},
-    io::{BufRead, BufReader, Read},
+    io::{BufReader, Read},
+    iter::Peekable,
 };
 
-use super::piece::Piece;
+use super::piece_move::MoveRules;
 use super::InvalidFormatError;
+use super::{piece::Piece, piece_move::PieceMove};
 
 #[derive(Debug)]
 pub struct PieceCatalog {
     pub catalog: HashMap<String, Piece>,
+}
+
+#[derive(Debug, PartialEq)]
+enum PieceTokenKind {
+    NameKeyword,
+    ImageKeyword,
+    LeapKeyword,
+    KillKeyword,
+    SpecialKeyword,
+    RunKeyword,
+
+    Colon,
+    Number(i32),
+    Text(String),
+
+    EndOfFile,
+}
+
+#[derive(Debug)]
+struct PieceToken {
+    line: usize,
+    text: String,
+    kind: PieceTokenKind,
+}
+
+#[derive(Debug)]
+enum PieceStatement {
+    Name {
+        name: String,
+    },
+    Image {
+        image_path: String,
+    },
+    Move {
+        kind: MoveRules,
+        forward: i32,
+        left: i32,
+    },
+    SpecialMove {
+        kind: MoveRules,
+    },
 }
 
 impl PieceCatalog {
@@ -33,52 +76,219 @@ impl PieceCatalog {
         Ok(())
     }
 
-    fn read_piece<R: Read>(reader: BufReader<R>) -> Result<Piece, crate::Error> {
-        let mut piece = Piece::new();
-        let mut line_num = 1;
-        for line in reader.lines() {
-            let line = line?;
-            if line.starts_with('-') {
-                continue;
-            } else if line.starts_with("Name") {
-                piece.name = line
-                    .split_whitespace()
-                    .nth(1)
-                    .ok_or_else(|| InvalidFormatError::new(line_num, line.clone()))?
-                    .to_string();
-            } else if line.starts_with("Image") {
-                piece.image_key = line
-                    .split_whitespace()
-                    .nth(1)
-                    .ok_or_else(|| InvalidFormatError::new(line_num, line.clone()))?
-                    .to_string();
-            } else if line.starts_with("Leap") {
-                let (forward, left) = parse_move(line)?;
-                piece.add_leap(forward, left);
-            } else if line.starts_with("Kill") {
-                let (forward, left) = parse_move(line)?;
-                piece.add_kill(forward, left);
-            } else if line.starts_with("Run") {
-                let (forward, left) = parse_move(line)?;
-                piece.add_run(forward, left);
-            } else if line.starts_with("Special") {
-                let special_move = line
-                    .split_whitespace()
-                    .nth(1)
-                    .ok_or_else(|| InvalidFormatError::new(line_num, line.clone()))?
-                    .to_string();
-                piece.add_special(special_move)?;
-            } else if line.starts_with("Promotion") {
-                let promotion_piece = line
-                    .split_whitespace()
-                    .nth(1)
-                    .ok_or_else(|| InvalidFormatError::new(line_num, line.clone()))?
-                    .to_string();
-                piece.promotions.push(promotion_piece);
+    fn lex_piece<R: Read>(reader: R) -> Result<Vec<PieceToken>, crate::Error> {
+        let mut reader = reader.bytes().peekable();
+        let mut line = 1;
+        let mut tokens = Vec::<PieceToken>::new();
+
+        while let Some(b) = reader.next() {
+            let b = b?;
+
+            match b {
+                b'\n' => line += 1,
+                b'\t' | b' ' | b'\r' => {}
+                b':' => tokens.push(PieceToken {
+                    line,
+                    text: String::from(":"),
+                    kind: PieceTokenKind::Colon,
+                }),
+                b'-' => {
+                    while let Some(Ok(b'-')) = reader.peek() {
+                        reader.next();
+                    }
+                    if let Some(&Ok(b)) = reader.peek() {
+                        if b.is_ascii_digit() {
+                            reader.next();
+                            let text = format!("-{}", b as char);
+                            tokens.push(PieceToken {
+                                line,
+                                kind: PieceTokenKind::Number(text.parse()?),
+                                text,
+                            })
+                        }
+                    }
+                }
+                b if b.is_ascii_digit() => {
+                    let text = (b as char).to_string();
+                    tokens.push(PieceToken {
+                        line,
+                        kind: PieceTokenKind::Number(text.parse()?),
+                        text,
+                    });
+                }
+                b if b.is_ascii_alphabetic() => {
+                    let mut word = (b as char).to_string();
+                    while let Some(&Ok(b)) = reader.peek() {
+                        if b.is_ascii_alphabetic() || b == b'.' || b == b'_' {
+                            word.push(b as char);
+                            reader.next();
+                        } else {
+                            break;
+                        }
+                    }
+                    let kind = match word.as_str() {
+                        "Name" => PieceTokenKind::NameKeyword,
+                        "Image" => PieceTokenKind::ImageKeyword,
+                        "Run" => PieceTokenKind::RunKeyword,
+                        "Leap" => PieceTokenKind::LeapKeyword,
+                        "Kill" => PieceTokenKind::KillKeyword,
+                        "Special" => PieceTokenKind::SpecialKeyword,
+                        _ => PieceTokenKind::Text(word.clone()),
+                    };
+                    tokens.push(PieceToken {
+                        line,
+                        kind,
+                        text: word,
+                    })
+                }
+                _ => return Err(InvalidFormatError::new(line, (b as char).to_string()).into()),
             }
-            line_num += 1;
+        }
+        tokens.push(PieceToken {
+            kind: PieceTokenKind::EndOfFile,
+            line,
+            text: String::new(),
+        });
+        Ok(tokens)
+    }
+
+    fn piece_name_statement(
+        tokens: &mut Peekable<impl Iterator<Item = PieceToken>>,
+    ) -> Result<PieceStatement, crate::Error> {
+        tokens.next();
+        let colon = tokens.next().unwrap();
+        if colon.kind != PieceTokenKind::Colon {
+            return Err(InvalidFormatError::new(colon.line, colon.text).into());
+        }
+        let name = tokens.next().unwrap();
+        match name.kind {
+            PieceTokenKind::Text(name) => Ok(PieceStatement::Name { name }),
+            _ => Err(InvalidFormatError::new(name.line, name.text).into()),
+        }
+    }
+
+    fn piece_image_statement(
+        tokens: &mut Peekable<impl Iterator<Item = PieceToken>>,
+    ) -> Result<PieceStatement, crate::Error> {
+        tokens.next();
+        let colon = tokens.next().unwrap();
+        if colon.kind != PieceTokenKind::Colon {
+            return Err(InvalidFormatError::new(colon.line, colon.text).into());
+        }
+        let image = tokens.next().unwrap();
+        match image.kind {
+            PieceTokenKind::Text(image_path) => Ok(PieceStatement::Image { image_path }),
+            _ => Err(InvalidFormatError::new(image.line, image.text).into()),
+        }
+    }
+
+    fn piece_move_statement(
+        tokens: &mut Peekable<impl Iterator<Item = PieceToken>>,
+    ) -> Result<PieceStatement, crate::Error> {
+        let move_token = tokens.next().unwrap();
+        let move_kind = match move_token.kind {
+            PieceTokenKind::KillKeyword => MoveRules::Kill,
+            PieceTokenKind::LeapKeyword => MoveRules::Leap,
+            PieceTokenKind::RunKeyword => MoveRules::Run,
+            _ => unreachable!(),
+        };
+        let colon = tokens.next().unwrap();
+        if colon.kind != PieceTokenKind::Colon {
+            return Err(InvalidFormatError::new(colon.line, colon.text).into());
+        }
+        let forward_token = tokens.next().unwrap();
+        let forward = match forward_token.kind {
+            PieceTokenKind::Number(f) => f,
+            _ => {
+                return Err(InvalidFormatError::new(forward_token.line, forward_token.text).into())
+            }
+        };
+        let left_token = tokens.next().unwrap();
+        let left = match left_token.kind {
+            PieceTokenKind::Number(l) => l,
+            _ => return Err(InvalidFormatError::new(left_token.line, left_token.text).into()),
+        };
+        Ok(PieceStatement::Move {
+            kind: move_kind,
+            forward,
+            left,
+        })
+    }
+
+    fn piece_special_move_statement(
+        tokens: &mut Peekable<impl Iterator<Item = PieceToken>>,
+    ) -> Result<PieceStatement, crate::Error> {
+        tokens.next();
+        let colon = tokens.next().unwrap();
+        if colon.kind != PieceTokenKind::Colon {
+            return Err(InvalidFormatError::new(colon.line, colon.text).into());
+        }
+        let special_token = tokens.next().unwrap();
+        let special = match special_token.kind {
+            PieceTokenKind::Text(special) => special,
+            _ => {
+                return Err(InvalidFormatError::new(special_token.line, special_token.text).into())
+            }
+        };
+        Ok(PieceStatement::SpecialMove {
+            kind: match special.as_str() {
+                "Castle" => MoveRules::Castle,
+                "PawnFirst" => MoveRules::PawnFirst,
+                _ => {
+                    return Err(
+                        InvalidFormatError::new(special_token.line, special_token.text).into(),
+                    )
+                }
+            },
+        })
+    }
+
+    fn piece_statement(
+        tokens: &mut Peekable<impl Iterator<Item = PieceToken>>,
+    ) -> Result<PieceStatement, crate::Error> {
+        match tokens.peek().unwrap().kind {
+            PieceTokenKind::NameKeyword => Self::piece_name_statement(tokens),
+            PieceTokenKind::ImageKeyword => Self::piece_image_statement(tokens),
+            PieceTokenKind::LeapKeyword
+            | PieceTokenKind::KillKeyword
+            | PieceTokenKind::RunKeyword => Self::piece_move_statement(tokens),
+            PieceTokenKind::SpecialKeyword => Self::piece_special_move_statement(tokens),
+            _ => Err(InvalidFormatError::new(
+                tokens.peek().unwrap().line,
+                tokens.peek().unwrap().text.clone(),
+            )
+            .into()),
+        }
+    }
+
+    fn parse_piece(tokens: impl Iterator<Item = PieceToken>) -> Result<Piece, crate::Error> {
+        let mut tokens = tokens.peekable();
+        let mut statements = Vec::<PieceStatement>::new();
+        while tokens.peek().unwrap().kind != PieceTokenKind::EndOfFile {
+            statements.push(Self::piece_statement(&mut tokens)?);
+        }
+        let mut piece = Piece::new();
+        dbg!(&statements);
+        for statement in statements {
+            match statement {
+                PieceStatement::Name { name } => piece.name = name,
+                PieceStatement::Image { image_path } => piece.image_key = image_path,
+                PieceStatement::Move {
+                    kind,
+                    forward,
+                    left,
+                } => piece.move_set.push(PieceMove::new(forward, left, kind)),
+                PieceStatement::SpecialMove { kind } => {
+                    piece.move_set.push(PieceMove::new_special(kind))
+                }
+            }
         }
         Ok(piece)
+    }
+
+    fn read_piece<R: Read>(reader: R) -> Result<Piece, crate::Error> {
+        let tokens = Self::lex_piece(reader)?;
+        Self::parse_piece(tokens.into_iter())
     }
 
     pub fn get_piece(&self, piece_name: &str) -> Result<&Piece, crate::Error> {
@@ -90,11 +300,6 @@ impl PieceCatalog {
             })?;
         Ok(out)
     }
-}
-
-fn parse_move(line: String) -> Result<(i32, i32), crate::Error> {
-    let mv = line.split_whitespace().skip(1).collect::<Vec<_>>();
-    Ok((mv[0].parse()?, mv[1].parse()?))
 }
 
 #[derive(Debug)]
@@ -114,16 +319,78 @@ impl std::error::Error for PieceNotFoundError {}
 mod tests {
     use super::*;
     use expect_test::{expect, Expect};
-    use textwrap::dedent;
 
-    fn check(expected: Expect, actual: Piece) {
-        expected.assert_eq(&format!("{:#?}", actual));
+    fn check(expected: Expect, actual: String) {
+        expected.assert_eq(&actual);
+    }
+
+    #[test]
+    fn lex_stuff() {
+        let data = "
+            Name: King
+            ";
+        let tokens = PieceCatalog::lex_piece(data.as_bytes()).unwrap();
+        check(
+            expect![[r#"
+                [
+                    PieceToken {
+                        line: 2,
+                        text: "Name",
+                        kind: NameKeyword,
+                    },
+                    PieceToken {
+                        line: 2,
+                        text: ":",
+                        kind: Colon,
+                    },
+                    PieceToken {
+                        line: 2,
+                        text: "King",
+                        kind: Text(
+                            "King",
+                        ),
+                    },
+                    PieceToken {
+                        line: 3,
+                        text: "",
+                        kind: EndOfFile,
+                    },
+                ]"#]],
+            format!("{:#?}", tokens),
+        );
+    }
+
+    #[test]
+    fn parse_name_statement() {
+        let data = "Name: King";
+        let piece = PieceCatalog::parse_piece(
+            PieceCatalog::lex_piece(data.as_bytes())
+                .unwrap()
+                .into_iter(),
+        )
+        .unwrap();
+        check(
+            expect![[r#"
+            Piece {
+                name: "King",
+                image_key: "",
+                move_set: [],
+                promotions: [],
+            }"#]],
+            format!("{:#?}", piece),
+        );
+    }
+
+    #[test]
+    fn parse_move_statement() {
+        let data = "Leap: -1 1";
+        let tokens = PieceCatalog::lex_piece(data.as_bytes()).unwrap();
+        let piece = PieceCatalog::parse_piece(tokens.into_iter()).unwrap();
     }
 
     #[test]
     fn read_basic_piece() {
-        let data = dedent(
-            "
+        let data = "
             ----------------------------
             Name: King
             Image: King.png
@@ -148,10 +415,8 @@ mod tests {
             ----------------------------
             Special: Castle
             ----------------------------
-        ",
-        );
-        let reader = BufReader::new(data.as_bytes());
-        let piece = PieceCatalog::read_piece(reader).unwrap();
+        ";
+        let piece = PieceCatalog::read_piece(data.as_bytes()).unwrap();
         check(
             expect![[r#"
                 Piece {
@@ -246,7 +511,7 @@ mod tests {
                     ],
                     promotions: [],
                 }"#]],
-            piece,
+            format!("{:#?}", piece),
         );
     }
 }
