@@ -17,3 +17,7 @@ parking_lot = "0.11"
 [dependencies.sdl2]
 version = "0.34"
 features = ["image", "ttf", "mixer"]
+
+[dev-dependencies]
+expect-test = "1.0"
+textwrap = "0.13"

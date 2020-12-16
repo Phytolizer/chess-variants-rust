@@ -109,3 +109,144 @@ impl Display for PieceNotFoundError {
 }
 
 impl std::error::Error for PieceNotFoundError {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use expect_test::{expect, Expect};
+    use textwrap::dedent;
+
+    fn check(expected: Expect, actual: Piece) {
+        expected.assert_eq(&format!("{:#?}", actual));
+    }
+
+    #[test]
+    fn read_basic_piece() {
+        let data = dedent(
+            "
+            ----------------------------
+            Name: King
+            Image: King.png
+            ----------------------------
+            Leap: 1 1
+            Leap: 1 -1
+            Leap: -1 1
+            Leap: -1 -1
+            Leap: 1 1
+            Leap: 1 -1
+            Leap: -1 1
+            Leap: -1 -1
+            ----------------------------
+            Kill: 1 1
+            Kill: 1 -1
+            Kill: -1 1
+            Kill: -1 -1
+            Kill: 1 1
+            Kill: 1 -1
+            Kill: -1 1
+            Kill: -1 -1
+            ----------------------------
+            Special: Castle
+            ----------------------------
+        ",
+        );
+        let reader = BufReader::new(data.as_bytes());
+        let piece = PieceCatalog::read_piece(reader).unwrap();
+        check(
+            expect![[r#"
+                Piece {
+                    name: "King",
+                    image_key: "King.png",
+                    move_set: [
+                        PieceMove {
+                            forward: 1,
+                            left: 1,
+                            rules: Leap,
+                        },
+                        PieceMove {
+                            forward: 1,
+                            left: -1,
+                            rules: Leap,
+                        },
+                        PieceMove {
+                            forward: -1,
+                            left: 1,
+                            rules: Leap,
+                        },
+                        PieceMove {
+                            forward: -1,
+                            left: -1,
+                            rules: Leap,
+                        },
+                        PieceMove {
+                            forward: 1,
+                            left: 1,
+                            rules: Leap,
+                        },
+                        PieceMove {
+                            forward: 1,
+                            left: -1,
+                            rules: Leap,
+                        },
+                        PieceMove {
+                            forward: -1,
+                            left: 1,
+                            rules: Leap,
+                        },
+                        PieceMove {
+                            forward: -1,
+                            left: -1,
+                            rules: Leap,
+                        },
+                        PieceMove {
+                            forward: 1,
+                            left: 1,
+                            rules: Kill,
+                        },
+                        PieceMove {
+                            forward: 1,
+                            left: -1,
+                            rules: Kill,
+                        },
+                        PieceMove {
+                            forward: -1,
+                            left: 1,
+                            rules: Kill,
+                        },
+                        PieceMove {
+                            forward: -1,
+                            left: -1,
+                            rules: Kill,
+                        },
+                        PieceMove {
+                            forward: 1,
+                            left: 1,
+                            rules: Kill,
+                        },
+                        PieceMove {
+                            forward: 1,
+                            left: -1,
+                            rules: Kill,
+                        },
+                        PieceMove {
+                            forward: -1,
+                            left: 1,
+                            rules: Kill,
+                        },
+                        PieceMove {
+                            forward: -1,
+                            left: -1,
+                            rules: Kill,
+                        },
+                        PieceMove {
+                            forward: 0,
+                            left: 0,
+                            rules: Castle,
+                        },
+                    ],
+                    promotions: [],
+                }"#]],
+            piece,
+        );
+    }
+}
