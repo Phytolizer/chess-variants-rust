@@ -118,8 +118,11 @@ impl PieceCatalog {
                 }
                 b if b.is_ascii_alphabetic() => {
                     let mut word = (b as char).to_string();
-                    while let Some(&Ok(b)) = reader.peek() {
+                    while let Some(&Ok(mut b)) = reader.peek() {
                         if b.is_ascii_alphabetic() || b == b'.' || b == b'_' {
+                            if b == b'_' {
+                                b = b' ';
+                            }
                             word.push(b as char);
                             reader.next();
                         } else {
@@ -513,5 +516,19 @@ mod tests {
                 }"#]],
             format!("{:#?}", piece),
         );
+    }
+
+    #[test]
+    fn name_with_space() {
+        let data = "Name: King_Killer";
+        let tokens = PieceCatalog::lex_piece(data.as_bytes()).unwrap();
+        let piece = PieceCatalog::parse_piece(tokens.into_iter()).unwrap();
+        check(expect![[r#"
+            Piece {
+                name: "King Killer",
+                image_key: "",
+                move_set: [],
+                promotions: [],
+            }"#]], format!("{:#?}", piece));
     }
 }
