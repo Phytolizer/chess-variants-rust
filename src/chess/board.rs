@@ -15,7 +15,5 @@ impl Board {
         })
     }
 
-    pub fn adjust_size(&mut self, width: u32, height: u32) {
-        
-    }
+    pub fn adjust_size(&mut self, width: u32, height: u32) {}
 }
