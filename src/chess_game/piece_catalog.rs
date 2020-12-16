@@ -21,8 +21,9 @@ enum PieceTokenKind {
     ImageKeyword,
     LeapKeyword,
     KillKeyword,
-    SpecialKeyword,
     RunKeyword,
+    SpecialKeyword,
+    PromotionKeyword,
 
     Colon,
     Number(i32),
@@ -54,6 +55,9 @@ enum PieceStatement {
     SpecialMove {
         kind: MoveRules,
     },
+    Promotion {
+        piece_reference: String,
+    }
 }
 
 impl PieceCatalog {
@@ -136,6 +140,7 @@ impl PieceCatalog {
                         "Leap" => PieceTokenKind::LeapKeyword,
                         "Kill" => PieceTokenKind::KillKeyword,
                         "Special" => PieceTokenKind::SpecialKeyword,
+                        "Promotion" => PieceTokenKind::PromotionKeyword,
                         _ => PieceTokenKind::Text(word.clone()),
                     };
                     tokens.push(PieceToken {
@@ -246,6 +251,24 @@ impl PieceCatalog {
         })
     }
 
+    fn piece_promotion_statement(tokens: &mut Peekable<impl Iterator<Item = PieceToken>>) -> Result<PieceStatement, crate::Error> {
+        tokens.next();
+        let colon = tokens.next().unwrap();
+        if colon.kind != PieceTokenKind::Colon {
+            return Err(InvalidFormatError::new(colon.line, colon.text).into());
+        }
+        let promotion_piece_reference = tokens.next().unwrap();
+        let promotion = match promotion_piece_reference.kind {
+            PieceTokenKind::Text(promotion) => promotion,
+            _ => {
+                return Err(InvalidFormatError::new(promotion_piece_reference.line, promotion_piece_reference.text).into())
+            }
+        };
+        Ok(PieceStatement::Promotion {
+            piece_reference: promotion,
+        })
+    }
+
     fn piece_statement(
         tokens: &mut Peekable<impl Iterator<Item = PieceToken>>,
     ) -> Result<PieceStatement, crate::Error> {
@@ -256,6 +279,7 @@ impl PieceCatalog {
             | PieceTokenKind::KillKeyword
             | PieceTokenKind::RunKeyword => Self::piece_move_statement(tokens),
             PieceTokenKind::SpecialKeyword => Self::piece_special_move_statement(tokens),
+            PieceTokenKind::PromotionKeyword => Self::piece_promotion_statement(tokens),
             _ => Err(InvalidFormatError::new(
                 tokens.peek().unwrap().line,
                 tokens.peek().unwrap().text.clone(),
@@ -283,6 +307,9 @@ impl PieceCatalog {
                 } => piece.move_set.push(PieceMove::new(forward, left, kind)),
                 PieceStatement::SpecialMove { kind } => {
                     piece.move_set.push(PieceMove::new_special(kind))
+                }
+                PieceStatement::Promotion { piece_reference } => {
+                    piece.promotions.push(piece_reference)
                 }
             }
         }
@@ -389,6 +416,19 @@ mod tests {
         let data = "Leap: -1 1";
         let tokens = PieceCatalog::lex_piece(data.as_bytes()).unwrap();
         let piece = PieceCatalog::parse_piece(tokens.into_iter()).unwrap();
+        check(expect![[r#"
+            Piece {
+                name: "",
+                image_key: "",
+                move_set: [
+                    PieceMove {
+                        forward: -1,
+                        left: 1,
+                        rules: Leap,
+                    },
+                ],
+                promotions: [],
+            }"#]], format!("{:#?}", piece));
     }
 
     #[test]

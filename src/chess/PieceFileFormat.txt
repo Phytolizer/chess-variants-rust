@@ -1,4 +1,0 @@
-name PieceName
-image ImagePath
-move h v
-kill h v
