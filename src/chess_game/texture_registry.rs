@@ -98,7 +98,7 @@ impl<'tc, C> TextureRegistry<'tc, C> {
             .copy(
                 self.board_texture
                     .as_ref()
-                    .ok_or_else(|| UninitializedTextureRegistryError {})?,
+                    .ok_or(UninitializedTextureRegistryError {})?,
                 None,
                 Some(self.area),
             )
