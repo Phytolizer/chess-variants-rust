@@ -57,7 +57,7 @@ enum PieceStatement {
     },
     Promotion {
         piece_reference: String,
-    }
+    },
 }
 
 impl PieceCatalog {
@@ -251,7 +251,9 @@ impl PieceCatalog {
         })
     }
 
-    fn piece_promotion_statement(tokens: &mut Peekable<impl Iterator<Item = PieceToken>>) -> Result<PieceStatement, crate::Error> {
+    fn piece_promotion_statement(
+        tokens: &mut Peekable<impl Iterator<Item = PieceToken>>,
+    ) -> Result<PieceStatement, crate::Error> {
         tokens.next();
         let colon = tokens.next().unwrap();
         if colon.kind != PieceTokenKind::Colon {
@@ -261,7 +263,11 @@ impl PieceCatalog {
         let promotion = match promotion_piece_reference.kind {
             PieceTokenKind::Text(promotion) => promotion,
             _ => {
-                return Err(InvalidFormatError::new(promotion_piece_reference.line, promotion_piece_reference.text).into())
+                return Err(InvalidFormatError::new(
+                    promotion_piece_reference.line,
+                    promotion_piece_reference.text,
+                )
+                .into())
             }
         };
         Ok(PieceStatement::Promotion {
@@ -416,7 +422,8 @@ mod tests {
         let data = "Leap: -1 1";
         let tokens = PieceCatalog::lex_piece(data.as_bytes()).unwrap();
         let piece = PieceCatalog::parse_piece(tokens.into_iter()).unwrap();
-        check(expect![[r#"
+        check(
+            expect![[r#"
             Piece {
                 name: "",
                 image_key: "",
@@ -428,7 +435,9 @@ mod tests {
                     },
                 ],
                 promotions: [],
-            }"#]], format!("{:#?}", piece));
+            }"#]],
+            format!("{:#?}", piece),
+        );
     }
 
     #[test]
@@ -580,12 +589,15 @@ mod tests {
         let data = "Name: King Image: King.png";
         let tokens = PieceCatalog::lex_piece(data.as_bytes()).unwrap();
         let piece = PieceCatalog::parse_piece(tokens.into_iter()).unwrap();
-        check(expect![[r#"
+        check(
+            expect![[r#"
             Piece {
                 name: "King",
                 image_key: "King.png",
                 move_set: [],
                 promotions: [],
-            }"#]], format!("{:#?}", piece));
+            }"#]],
+            format!("{:#?}", piece),
+        );
     }
 }
