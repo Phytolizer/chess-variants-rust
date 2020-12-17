@@ -4,7 +4,7 @@ use std::{fs::DirEntry, fs::File, io::BufRead, io::BufReader};
 use super::game_piece::GamePiece;
 use super::piece_catalog::PieceCatalog;
 use super::InvalidFormatError;
-use super::{board_space::BoardSpace, game_piece};
+use super::{board_space::BoardSpace, piece::Piece};
 
 pub struct Board {
     pub name: String,
@@ -16,6 +16,12 @@ pub struct Board {
     pub space_size: u32,
     pub horz_offset: i32,
     pub vert_offset: i32,
+}
+
+struct SelectedPiece<'a> {
+    piece: &'a Piece,
+    horz_pos: i32,
+    vert_pos: i32,
 }
 
 impl Board {
@@ -160,16 +166,73 @@ impl Board {
         Ok(())
     }
 
-    pub fn mouse_left_click(&mut self) -> Result<(), crate::Error> {
-        for grid_space in self.grid.iter() {
-            if grid_space.hovered {
-                println!(
-                    "{}",
-                    "Clicked: ".to_owned()
-                        + &grid_space.horz_position.to_string()
-                        + ", "
-                        + &grid_space.vert_position.to_string()
-                );
+    pub fn mouse_left_click(&mut self, pieces: &PieceCatalog) -> Result<(), crate::Error> {
+        for sp in &mut self.grid {
+            for piece in &mut sp.game_pieces {
+                piece.selected = sp.hovered;
+            }
+        }
+        let mut selected_pieces = vec![];
+        for sp in &self.grid {
+            for piece in &sp.game_pieces {
+                if piece.selected {
+                    let p = pieces.get_piece(&piece.piece_name)?;
+                    selected_pieces.push(SelectedPiece {
+                        piece: p,
+                        horz_pos: piece.horz_position as i32,
+                        vert_pos: piece.vert_position as i32,
+                    });
+                    println!("{}", piece.piece_name);
+                }
+            }
+        }
+        self.generate_moves_for(selected_pieces)?;
+        Ok(())
+    }
+
+    fn generate_moves_for(&mut self, pieces: Vec<SelectedPiece>) -> Result<(), crate::Error> {
+        for sp in pieces {
+            for mv in sp.piece.move_set.iter() {
+                let (offset_x, offset_y) = (mv.forward() + sp.horz_pos, mv.left() + sp.vert_pos);
+                if offset_x < self.width as i32
+                    && offset_x >= 0
+                    && offset_y < self.height as i32
+                    && offset_y >= 0
+                {
+                    match mv.movement_type() {
+                        super::piece_move::MoveRules::Leap => {
+                            // Check if another piece is present at location
+                            if self
+                                .grid
+                                .iter()
+                                .find(|p| {
+                                    p.horz_position == offset_x as u32 && p.vert_position == offset_y as u32
+                                })
+                                .is_some()
+                            {
+                                // there is a piece at this location
+                            } else {
+                                // empty location
+                            }
+                        }
+                        super::piece_move::MoveRules::Run => {
+                            // iterate over spaces until a piece is found or the square is invalid
+                        }
+                        super::piece_move::MoveRules::Kill => {
+                            if self
+                                .grid
+                                .iter()
+                                .find(|p| {
+                                    p.horz_position == offset_x as u32 && p.vert_position == offset_y as u32
+                                })
+                                .is_some()
+                            {
+                                // Check to see if the piece at this location is an ememy piece
+                            }
+                        }
+                        _ => {}
+                    }
+                }
             }
         }
         Ok(())

@@ -62,7 +62,7 @@ impl<'tc, C> ChessGame<'tc, C> {
     }
 
     pub fn mouse_left_click(&mut self) -> Result<(), crate::Error> {
-        self.board.mouse_left_click()
+        self.board.mouse_left_click(&self.piece_catalog)
     }
 }
 

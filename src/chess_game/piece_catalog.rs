@@ -301,7 +301,6 @@ impl PieceCatalog {
             statements.push(Self::piece_statement(&mut tokens)?);
         }
         let mut piece = Piece::new();
-        dbg!(&statements);
         for statement in statements {
             match statement {
                 PieceStatement::Name { name } => piece.name = name,
