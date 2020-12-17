@@ -6,6 +6,8 @@ use super::piece_catalog::PieceCatalog;
 use super::InvalidFormatError;
 use super::{board_space::BoardSpace, piece::Piece};
 
+pub(crate) mod move_data;
+
 pub struct Board {
     pub name: String,
     pub grid: Vec<BoardSpace>,
@@ -13,6 +15,7 @@ pub struct Board {
     pub height: u32,
     pub players: Vec<String>,
     pub dead_pieces: Vec<GamePiece>, // Maybe save the collection of MOVES and just remove dead pieces
+    pub moves: Vec<MoveData>,
     pub space_size: u32,
     pub horz_offset: i32,
     pub vert_offset: i32,
