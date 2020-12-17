@@ -45,7 +45,7 @@ impl PieceMove {
         self.left
     }
 
-    pub fn movement_type(&self) -> MoveRules {
-        self.rules
+    pub fn movement_type(&self) -> &MoveRules {
+        &self.rules
     }
 }
