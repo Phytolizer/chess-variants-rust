@@ -206,7 +206,8 @@ impl Board {
                                 .grid
                                 .iter()
                                 .find(|p| {
-                                    p.horz_position == offset_x as u32 && p.vert_position == offset_y as u32
+                                    p.horz_position == offset_x as u32
+                                        && p.vert_position == offset_y as u32
                                 })
                                 .is_some()
                             {
@@ -219,15 +220,17 @@ impl Board {
                             // iterate over spaces until a piece is found or the square is invalid
                         }
                         super::piece_move::MoveRules::Kill => {
-                            if self
-                                .grid
-                                .iter()
-                                .find(|p| {
-                                    p.horz_position == offset_x as u32 && p.vert_position == offset_y as u32
-                                })
-                                .is_some()
-                            {
+                            if let Some(occupied_space) = self.grid.iter().find(|p| {
+                                p.horz_position == offset_x as u32
+                                    && p.vert_position == offset_y as u32
+                            }) {
                                 // Check to see if the piece at this location is an ememy piece
+                                if occupied_space
+                                    .game_pieces
+                                    .iter()
+                                    .any(|p| p.team_name != todo!("what goes here?"))
+                                {
+                                }
                             }
                         }
                         _ => {}
