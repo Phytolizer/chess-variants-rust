@@ -103,7 +103,8 @@ impl<'tc, C> TextureRegistry<'tc, C> {
                 Some(self.area),
             )
             .sdl_error()?;
-        for game_piece in &board.game_pieces {
+        let game_pieces = &board.collect_game_pieces()?;
+        for game_piece in game_pieces {
             let piece_texture = match self.pieces.get(&game_piece.piece_name) {
                 Some(pt) => pt,
                 None => continue,

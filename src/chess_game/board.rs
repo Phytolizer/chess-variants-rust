@@ -1,18 +1,17 @@
 use sdl2::{pixels::Color, rect::Rect};
 use std::{fs::DirEntry, fs::File, io::BufRead, io::BufReader};
 
-use super::board_space::BoardSpace;
 use super::game_piece::GamePiece;
 use super::piece_catalog::PieceCatalog;
 use super::InvalidFormatError;
+use super::{board_space::BoardSpace, game_piece};
 
 pub struct Board {
     pub name: String,
     pub grid: Vec<BoardSpace>,
     pub width: u32,
     pub height: u32,
-    pub players: Vec<String>,        // TODO: Enum?
-    pub game_pieces: Vec<GamePiece>, // Maybe this should be under grid for simplicity
+    pub players: Vec<String>,
     pub dead_pieces: Vec<GamePiece>, // Maybe save the collection of MOVES and just remove dead pieces
     pub space_size: u32,
     pub horz_offset: i32,
@@ -25,7 +24,6 @@ impl Board {
             name: "".to_string(),
             grid: vec![],
             players: vec![],
-            game_pieces: vec![],
             dead_pieces: vec![],
             width: 0,
             height: 0,
@@ -97,17 +95,40 @@ impl Board {
                             .ok_or_else(|| InvalidFormatError::new(line_num, line.clone()))?
                             .to_string(),
                     )?;
-                    self.game_pieces.push(GamePiece::new(
-                        piece.name.clone(),
-                        team_name,
-                        horz_pos,
-                        vert_pos,
-                    )?);
+                    let piece_index = self.find_board_space_index(horz_pos, vert_pos);
+                    if piece_index >= 0 {
+                        let game_pieces =
+                            &mut self.grid.get_mut(piece_index as usize).unwrap().game_pieces;
+                        game_pieces.push(GamePiece::new(
+                            piece.name.clone(),
+                            team_name,
+                            horz_pos,
+                            vert_pos,
+                        )?);
+                    }
                 }
                 line_num += 1;
             }
         }
         Ok(())
+    }
+
+    pub fn find_board_space_index(&self, horz_pos: u32, vert_pos: u32) -> i32 {
+        self.grid
+            .iter()
+            .position(|sp| sp.horz_position == horz_pos - 1 && sp.vert_position == vert_pos - 1)
+            .map(|x| x as i32)
+            .unwrap_or(-1)
+    }
+
+    pub fn collect_game_pieces(&self) -> Result<Vec<&GamePiece>, crate::Error> {
+        let mut game_pieces = vec![];
+        for space in &self.grid {
+            for piece in &space.game_pieces {
+                game_pieces.push(piece);
+            }
+        }
+        Ok(game_pieces)
     }
 
     pub fn calculate_values(&mut self, horz_size: u32, vert_size: u32) -> Result<(), crate::Error> {
