@@ -121,14 +121,14 @@ impl Board {
             .unwrap_or(-1)
     }
 
-    pub fn collect_game_pieces(&self) -> Result<Vec<&GamePiece>, crate::Error> {
+    pub fn collect_game_pieces(&self) -> Vec<&GamePiece> {
         let mut game_pieces = vec![];
         for space in &self.grid {
             for piece in &space.game_pieces {
                 game_pieces.push(piece);
             }
         }
-        Ok(game_pieces)
+        game_pieces
     }
 
     pub fn calculate_values(&mut self, horz_size: u32, vert_size: u32) -> Result<(), crate::Error> {
