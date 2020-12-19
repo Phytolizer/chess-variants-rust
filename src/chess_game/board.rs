@@ -11,6 +11,7 @@ use super::board_space::BoardSpace;
 use super::game_piece::GamePiece;
 use super::piece::Piece;
 use super::piece_catalog::PieceCatalog;
+use super::piece_move::MoveRules;
 use super::InvalidFormatError;
 
 pub(crate) mod move_data;
@@ -32,6 +33,7 @@ struct SelectedPiece<'a> {
     piece: &'a Piece,
     horz_pos: i32,
     vert_pos: i32,
+    team_name: String,
 }
 
 impl Board {
@@ -192,16 +194,17 @@ impl Board {
                         piece: p,
                         horz_pos: piece.horz_position as i32,
                         vert_pos: piece.vert_position as i32,
+                        team_name: piece.team_name.clone(),
                     });
                     println!("{}", piece.piece_name);
                 }
             }
         }
-        self.generate_moves_for(selected_pieces)?;
+        self.generate_moves_for(selected_pieces);
         Ok(())
     }
 
-    fn generate_moves_for(&mut self, pieces: Vec<SelectedPiece>) -> Result<(), crate::Error> {
+    fn generate_moves_for(&mut self, pieces: Vec<SelectedPiece>) {
         for sp in pieces {
             for mv in sp.piece.move_set.iter() {
                 let (offset_x, offset_y) = (mv.forward() + sp.horz_pos, mv.left() + sp.vert_pos);
@@ -211,26 +214,21 @@ impl Board {
                     && offset_y >= 0
                 {
                     match mv.movement_type() {
-                        super::piece_move::MoveRules::Leap => {
+                        MoveRules::Leap => {
                             // Check if another piece is present at location
-                            if self
-                                .grid
-                                .iter()
-                                .find(|p| {
-                                    p.horz_position == offset_x as u32
-                                        && p.vert_position == offset_y as u32
-                                })
-                                .is_some()
-                            {
+                            if self.grid.iter().any(|p| {
+                                p.horz_position == offset_x as u32
+                                    && p.vert_position == offset_y as u32
+                            }) {
                                 // there is a piece at this location
                             } else {
                                 // empty location
                             }
                         }
-                        super::piece_move::MoveRules::Run => {
+                        MoveRules::Run => {
                             // iterate over spaces until a piece is found or the square is invalid
                         }
-                        super::piece_move::MoveRules::Kill => {
+                        MoveRules::Kill => {
                             if let Some(occupied_space) = self.grid.iter().find(|p| {
                                 p.horz_position == offset_x as u32
                                     && p.vert_position == offset_y as u32
@@ -239,7 +237,7 @@ impl Board {
                                 if occupied_space
                                     .game_pieces
                                     .iter()
-                                    .any(|p| p.team_name != todo!("what goes here?"))
+                                    .any(|p| p.team_name != sp.team_name)
                                 {
                                 }
                             }
@@ -249,6 +247,5 @@ impl Board {
                 }
             }
         }
-        Ok(())
     }
 }

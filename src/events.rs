@@ -2,6 +2,7 @@ use std::rc::Rc;
 
 use parking_lot::RwLock;
 use sdl2::event::Event;
+use sdl2::event::WindowEvent;
 use sdl2::mouse::MouseButton;
 use sdl2::rect::Rect;
 use sdl2::render::WindowCanvas;
@@ -43,16 +44,17 @@ impl<'tc, C> EventHandler<'tc, C> {
                     self.height as u32,
                 )?;
             }
-            Event::Window { win_event, .. } => {
-                if let sdl2::event::WindowEvent::SizeChanged(w, h) = win_event {
-                    self.width = *w as u32;
-                    self.height = *h as u32;
-                    self.chess_game.write().render_board(
-                        self.canvas.clone(),
-                        self.width as u32,
-                        self.height as u32,
-                    )?;
-                }
+            Event::Window {
+                win_event: WindowEvent::SizeChanged(w, h),
+                ..
+            } => {
+                self.width = *w as u32;
+                self.height = *h as u32;
+                self.chess_game.write().render_board(
+                    self.canvas.clone(),
+                    self.width as u32,
+                    self.height as u32,
+                )?;
             }
             Event::MouseMotion { x, y, .. } => {
                 self.chess_game.write().mouse_hover(x, y)?;

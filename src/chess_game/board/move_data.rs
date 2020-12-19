@@ -1,4 +1,4 @@
-pub(crate) struct MoveData {
+pub struct MoveData {
     player: usize,
     from_x: i32,
     from_y: i32,
