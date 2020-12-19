@@ -1,10 +1,17 @@
-use sdl2::{pixels::Color, rect::Rect};
-use std::{fs::DirEntry, fs::File, io::BufRead, io::BufReader};
+use sdl2::pixels::Color;
+use sdl2::rect::Rect;
+use std::fs::DirEntry;
+use std::fs::File;
+use std::io::BufRead;
+use std::io::BufReader;
 
+use crate::chess_game::board::move_data::MoveData;
+
+use super::board_space::BoardSpace;
 use super::game_piece::GamePiece;
+use super::piece::Piece;
 use super::piece_catalog::PieceCatalog;
 use super::InvalidFormatError;
-use super::{board_space::BoardSpace, piece::Piece};
 
 pub(crate) mod move_data;
 
@@ -34,6 +41,7 @@ impl Board {
             grid: vec![],
             players: vec![],
             dead_pieces: vec![],
+            moves: vec![],
             width: 0,
             height: 0,
             space_size: 0,

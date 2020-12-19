@@ -7,8 +7,11 @@ mod piece_move;
 pub(crate) mod texture_registry;
 
 use parking_lot::RwLock;
-use sdl2::render::{TextureCreator, WindowCanvas};
-use std::{fmt::Display, fs, rc::Rc};
+use sdl2::render::TextureCreator;
+use sdl2::render::WindowCanvas;
+use std::fmt::Display;
+use std::fs;
+use std::rc::Rc;
 
 pub struct ChessGame<'tc, C> {
     pub piece_catalog: piece_catalog::PieceCatalog,

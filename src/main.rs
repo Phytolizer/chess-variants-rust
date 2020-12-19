@@ -7,12 +7,13 @@ mod sdl_error;
 
 use events::EventHandler;
 use parking_lot::RwLock;
-use sdl2::{
-    event::Event::Quit,
-    pixels::Color,
-    render::{BlendMode, TargetRenderError, TextureValueError},
-};
-use sdl_error::{SdlError, ToSdl};
+use sdl2::event::Event::Quit;
+use sdl2::pixels::Color;
+use sdl2::render::BlendMode;
+use sdl2::render::TargetRenderError;
+use sdl2::render::TextureValueError;
+use sdl_error::SdlError;
+use sdl_error::ToSdl;
 use std::rc::Rc;
 
 use gfx::Button;

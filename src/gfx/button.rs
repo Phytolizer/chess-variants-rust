@@ -5,10 +5,12 @@ use super::Widgety;
 
 use parking_lot::RwLock;
 use sdl2::event::Event;
+use sdl2::mouse::MouseButton;
 use sdl2::pixels::Color;
-use sdl2::{mouse::MouseButton, render::WindowCanvas};
+use sdl2::render::WindowCanvas;
 
-use crate::{sdl_error::ToSdl, Error};
+use crate::sdl_error::ToSdl;
+use crate::Error;
 
 #[derive(PartialEq, Eq)]
 enum State {

@@ -6,9 +6,10 @@ use std::{
     iter::Peekable,
 };
 
+use super::piece::Piece;
 use super::piece_move::MoveRules;
+use super::piece_move::PieceMove;
 use super::InvalidFormatError;
-use super::{piece::Piece, piece_move::PieceMove};
 
 #[derive(Debug)]
 pub struct PieceCatalog {

@@ -1,12 +1,17 @@
 use crate::sdl_error::ToSdl;
 use parking_lot::RwLock;
-use sdl2::{
-    image::LoadTexture,
-    pixels::Color,
-    rect::{Point, Rect},
-    render::{Texture, TextureCreator, WindowCanvas},
-};
-use std::{collections::HashMap, fmt::Display, fs, path::PathBuf, rc::Rc};
+use sdl2::image::LoadTexture;
+use sdl2::pixels::Color;
+use sdl2::rect::Point;
+use sdl2::rect::Rect;
+use sdl2::render::Texture;
+use sdl2::render::TextureCreator;
+use sdl2::render::WindowCanvas;
+use std::collections::HashMap;
+use std::fmt::Display;
+use std::fs;
+use std::path::PathBuf;
+use std::rc::Rc;
 
 use super::board::Board;
 

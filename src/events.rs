@@ -1,9 +1,13 @@
 use std::rc::Rc;
 
 use parking_lot::RwLock;
-use sdl2::{event::Event, mouse::MouseButton, rect::Rect, render::WindowCanvas};
+use sdl2::event::Event;
+use sdl2::mouse::MouseButton;
+use sdl2::rect::Rect;
+use sdl2::render::WindowCanvas;
 
-use crate::{chess_game::ChessGame, gfx::Widgety};
+use crate::chess_game::ChessGame;
+use crate::gfx::Widgety;
 
 pub struct EventHandler<'tc, C> {
     chess_game: Rc<RwLock<ChessGame<'tc, C>>>,
