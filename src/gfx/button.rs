@@ -8,8 +8,8 @@ use sdl2::event::Event;
 use sdl2::mouse::MouseButton;
 use sdl2::pixels::Color;
 use sdl2::render::WindowCanvas;
+use sdl_helpers::SdlError;
 
-use crate::sdl_error::ToSdl;
 use crate::Error;
 
 #[derive(PartialEq, Eq)]
@@ -31,18 +31,26 @@ impl Widgety for Button {
     fn draw(&self, canvas: Rc<RwLock<WindowCanvas>>) -> Result<(), Error> {
         let mut canvas = canvas.write();
         canvas.set_draw_color(self.widget.color);
-        canvas.fill_rect(self.widget.rect).sdl_error()?;
+        canvas
+            .fill_rect(self.widget.rect)
+            .map_err(SdlError::Drawing)?;
         canvas.set_draw_color(Color::BLACK);
-        canvas.draw_rect(self.widget.rect).sdl_error()?;
+        canvas
+            .draw_rect(self.widget.rect)
+            .map_err(SdlError::Drawing)?;
         match self.state {
             State::Normal => {}
             State::Hovered => {
                 canvas.set_draw_color(Color::RGBA(0x00, 0x00, 0x00, 0x20));
-                canvas.fill_rect(self.widget.rect).sdl_error()?;
+                canvas
+                    .fill_rect(self.widget.rect)
+                    .map_err(SdlError::Drawing)?;
             }
             State::Pressed => {
                 canvas.set_draw_color(Color::RGBA(0x00, 0x00, 0x00, 0x40));
-                canvas.fill_rect(self.widget.rect).sdl_error()?;
+                canvas
+                    .fill_rect(self.widget.rect)
+                    .map_err(SdlError::Drawing)?;
             }
         }
         Ok(())

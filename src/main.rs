@@ -3,7 +3,6 @@
 mod chess_game;
 mod events;
 mod gfx;
-mod sdl_error;
 
 use events::EventHandler;
 use parking_lot::RwLock;
@@ -12,37 +11,34 @@ use sdl2::pixels::Color;
 use sdl2::render::BlendMode;
 use sdl2::render::TargetRenderError;
 use sdl2::render::TextureValueError;
-use sdl_error::SdlError;
-use sdl_error::ToSdl;
+use sdl_helpers::SdlError;
 use std::rc::Rc;
 
 use gfx::Button;
 
 fn main() {
     let result = (|| -> Result<(), Error> {
-        let sdl = sdl2::init().sdl_error()?;
-        let sdl_video = sdl.video().sdl_error()?;
-        let window = sdl_video
-            .window("Test window", 800, 600)
-            .position_centered()
-            .resizable()
-            .build()
-            .sdl_error()?;
-
+        let sdl = sdl2::init().map_err(SdlError::Init)?;
+        let video = sdl.video().map_err(SdlError::InitVideo)?;
         let canvas = Rc::new(RwLock::new(
-            window
+            video
+                .window("Test window", 800, 600)
+                .position_centered()
+                .resizable()
+                .build()
+                .map_err(SdlError::CreateWindow)?
                 .into_canvas()
                 .accelerated()
                 .present_vsync()
                 .target_texture()
                 .build()
-                .sdl_error()?,
+                .map_err(SdlError::CreateCanvas)?,
         ));
         canvas.write().set_blend_mode(BlendMode::Blend);
 
         let texture_creator = canvas.read().texture_creator();
 
-        let mut event_pump = sdl.event_pump().sdl_error()?;
+        let mut event_pump = sdl.event_pump().map_err(SdlError::EventPump)?;
 
         let width = 800u32;
         let height = 600u32;

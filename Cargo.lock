@@ -352,8 +352,8 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "sdl-helpers"
-version = "0.2.0"
-source = "git+https://github.com/onContentStop/sdl-helpers.git#7be31430089a2243a5197386960e6bc45e537cea"
+version = "0.2.1"
+source = "git+https://github.com/onContentStop/sdl-helpers.git#0bf4215f9b6c1cfbbc50573afd0b62659d2f56a4"
 dependencies = [
  "anyhow",
  "chrono",

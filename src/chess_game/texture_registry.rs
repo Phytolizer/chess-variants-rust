@@ -1,4 +1,3 @@
-use crate::sdl_error::ToSdl;
 use parking_lot::RwLock;
 use sdl2::image::LoadTexture;
 use sdl2::pixels::Color;
@@ -7,6 +6,7 @@ use sdl2::rect::Rect;
 use sdl2::render::Texture;
 use sdl2::render::TextureCreator;
 use sdl2::render::WindowCanvas;
+use sdl_helpers::SdlError;
 use std::collections::HashMap;
 use std::fmt::Display;
 use std::fs;
@@ -85,7 +85,7 @@ impl<'tc, C> TextureRegistry<'tc, C> {
                 let tex = self
                     .texture_creator
                     .load_texture(&PathBuf::from(&dir_path).join(&full_file_name))
-                    .sdl_error()?;
+                    .map_err(SdlError::LoadImage)?;
                 let key = full_file_name.split('.').next().unwrap();
                 self.pieces.insert(key.to_string(), tex);
             }
@@ -107,7 +107,7 @@ impl<'tc, C> TextureRegistry<'tc, C> {
                 None,
                 Some(self.area),
             )
-            .sdl_error()?;
+            .map_err(SdlError::Drawing)?;
         let game_pieces = &board.collect_game_pieces()?;
         for game_piece in game_pieces {
             let piece_texture = match self.pieces.get(&game_piece.piece_name) {
@@ -123,7 +123,7 @@ impl<'tc, C> TextureRegistry<'tc, C> {
             canvas
                 .write()
                 .copy(piece_texture, None, Some(piece_area))
-                .sdl_error()?;
+                .map_err(SdlError::Drawing)?;
         }
         Ok(())
     }
