@@ -17,6 +17,7 @@ pub struct ChessGame<'tc, C> {
     pub piece_catalog: piece_catalog::PieceCatalog,
     pub board: board::Board,
     pub textures: texture_registry::TextureRegistry<'tc, C>,
+    pub texture_creator: &'tc TextureCreator<C>,
 }
 
 impl<'tc, C> ChessGame<'tc, C> {
@@ -25,6 +26,7 @@ impl<'tc, C> ChessGame<'tc, C> {
             piece_catalog: piece_catalog::PieceCatalog::new()?,
             board: board::Board::new()?,
             textures: texture_registry::TextureRegistry::new(texture_creator),
+            texture_creator,
         })
     }
 
@@ -55,8 +57,10 @@ impl<'tc, C> ChessGame<'tc, C> {
         width: u32,
         height: u32,
     ) -> Result<(), crate::Error> {
-        self.textures
-            .render_board(canvas, (width, height), &mut self.board)?;
+        let board_texture = self
+            .board
+            .render(canvas, (width, height), self.texture_creator)?;
+        self.textures.board_texture = Some(board_texture);
         Ok(())
     }
 

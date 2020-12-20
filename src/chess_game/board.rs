@@ -1,11 +1,19 @@
+use parking_lot::RwLock;
 use sdl2::pixels::Color;
+use sdl2::rect::Point;
 use sdl2::rect::Rect;
+use sdl2::render::Texture;
+use sdl2::render::TextureCreator;
+use sdl2::render::WindowCanvas;
+use sdl_helpers::SdlError;
 use std::fs::DirEntry;
 use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
+use std::rc::Rc;
 
 use crate::chess_game::board::move_data::MoveData;
+use crate::chess_game::texture_registry::UninitializedTextureRegistryError;
 
 use super::board_space::BoardSpace;
 use super::game_piece::GamePiece;
@@ -25,8 +33,7 @@ pub struct Board {
     pub dead_pieces: Vec<GamePiece>, // Maybe save the collection of MOVES and just remove dead pieces
     pub moves: Vec<MoveData>,
     pub space_size: u32,
-    pub horz_offset: i32,
-    pub vert_offset: i32,
+    pub rect: Rect,
 }
 
 struct SelectedPiece<'a> {
@@ -47,8 +54,7 @@ impl Board {
             width: 0,
             height: 0,
             space_size: 0,
-            horz_offset: 0,
-            vert_offset: 0,
+            rect: Rect::new(0, 0, 0, 0),
         })
     }
 
@@ -85,7 +91,17 @@ impl Board {
                             } else {
                                 Color::WHITE
                             };
-                            self.grid.push(BoardSpace::new(i, j, color)?);
+                            self.grid.push(BoardSpace::new(
+                                i,
+                                j,
+                                color,
+                                Rect::new(
+                                    self.rect.x + (self.space_size * i) as i32,
+                                    self.rect.y + (self.space_size * j) as i32,
+                                    self.space_size,
+                                    self.space_size,
+                                ),
+                            )?);
                         }
                     }
                 // Generate blank board_space to self.grid
@@ -150,23 +166,22 @@ impl Board {
         game_pieces
     }
 
-    pub fn calculate_values(&mut self, horz_size: u32, vert_size: u32) -> Result<(), crate::Error> {
+    pub fn calculate_values(&mut self, horz_size: u32, vert_size: u32) {
         self.space_size = if horz_size / self.width < vert_size / self.height {
             horz_size / self.width
         } else {
             vert_size / self.height
         };
 
-        self.horz_offset = ((horz_size - self.width * self.space_size) / 2) as i32;
-        self.vert_offset = ((vert_size - self.height * self.space_size) / 2) as i32;
-        Ok(())
+        self.rect.x = ((horz_size - self.width * self.space_size) / 2) as i32;
+        self.rect.y = ((vert_size - self.height * self.space_size) / 2) as i32;
     }
 
     pub fn mouse_hover(&mut self, x: &i32, y: &i32) -> Result<(), crate::Error> {
         for grid_space in self.grid.iter_mut() {
             let rect = Rect::new(
-                self.horz_offset + (grid_space.horz_position * self.space_size) as i32,
-                self.vert_offset + (grid_space.vert_position * self.space_size) as i32,
+                self.rect.x + (grid_space.horz_position * self.space_size) as i32,
+                self.rect.y + (grid_space.vert_position * self.space_size) as i32,
                 self.space_size,
                 self.space_size,
             );
@@ -207,7 +222,8 @@ impl Board {
     fn generate_moves_for(&mut self, pieces: Vec<SelectedPiece>) {
         for sp in pieces {
             for mv in sp.piece.move_set.iter() {
-                let (offset_x, offset_y) = (mv.forward() + sp.horz_pos, mv.left() + sp.vert_pos);
+                let (offset_x, offset_y) =
+                    (mv.forward() + sp.horz_pos - 1, mv.left() + sp.vert_pos - 1);
                 if offset_x < self.width as i32
                     && offset_x >= 0
                     && offset_y < self.height as i32
@@ -216,20 +232,20 @@ impl Board {
                     match mv.movement_type() {
                         MoveRules::Leap => {
                             // Check if another piece is present at location
-                            if self.grid.iter().any(|p| {
-                                p.horz_position == offset_x as u32
-                                    && p.vert_position == offset_y as u32
+                            if let Some(space) = self.grid.iter_mut().find(|space| {
+                                space.horz_position == offset_x as u32
+                                    && space.vert_position == offset_y as u32
                             }) {
-                                // there is a piece at this location
-                            } else {
-                                // empty location
+                                if space.game_pieces.is_empty() {
+                                    space.available_to_move = true;
+                                }
                             }
                         }
                         MoveRules::Run => {
                             // iterate over spaces until a piece is found or the square is invalid
                         }
                         MoveRules::Kill => {
-                            if let Some(occupied_space) = self.grid.iter().find(|p| {
+                            if let Some(occupied_space) = self.grid.iter_mut().find(|p| {
                                 p.horz_position == offset_x as u32
                                     && p.vert_position == offset_y as u32
                             }) {
@@ -239,6 +255,7 @@ impl Board {
                                     .iter()
                                     .any(|p| p.team_name != sp.team_name)
                                 {
+                                    occupied_space.available_to_kill = true;
                                 }
                             }
                         }
@@ -247,5 +264,67 @@ impl Board {
                 }
             }
         }
+    }
+
+    pub fn render<'tc, R>(
+        &mut self,
+        canvas: Rc<RwLock<WindowCanvas>>,
+        canvas_size: (u32, u32),
+        texture_creator: &'tc TextureCreator<R>,
+    ) -> Result<Texture<'tc>, crate::Error> {
+        let mut board_texture = texture_creator.create_texture_target(
+            canvas.read().default_pixel_format(),
+            self.width,
+            self.height,
+        )?;
+
+        self.calculate_values(canvas_size.0, canvas_size.1);
+
+        let size_horz = self.width * self.space_size;
+        let size_vert = self.height * self.space_size;
+
+        self.rect = Rect::new(self.rect.x, self.rect.y, size_horz, size_vert);
+        for square in self.grid.iter_mut() {
+            square.update_rect(self.rect.x, self.rect.y, self.space_size);
+        }
+        canvas
+            .write()
+            .with_texture_canvas(&mut board_texture, |c: &mut WindowCanvas| {
+                c.set_draw_color(Color::BLACK);
+                c.clear();
+                for space in &self.grid {
+                    if !space.is_active {
+                        continue;
+                    }
+                    c.set_draw_color(space.color);
+                    c.draw_point(Point::new(
+                        space.horz_position as i32,
+                        space.vert_position as i32,
+                    ))
+                    // FIXME FIXME FIXME
+                    .unwrap();
+                }
+            })?;
+        Ok(board_texture)
+    }
+    pub fn draw(
+        &self,
+        canvas: Rc<RwLock<WindowCanvas>>,
+        texture: &Option<Texture>,
+    ) -> Result<(), crate::Error> {
+        canvas
+            .write()
+            .copy(
+                texture
+                    .as_ref()
+                    .ok_or(UninitializedTextureRegistryError {})?,
+                None,
+                Some(self.rect),
+            )
+            .map_err(SdlError::Drawing)?;
+        for space in self.grid.iter() {
+            space.draw(canvas.clone())?;
+        }
+        Ok(())
     }
 }
