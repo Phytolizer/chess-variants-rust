@@ -5,14 +5,14 @@ use sdl2::event::Event;
 use sdl2::event::WindowEvent;
 use sdl2::mouse::MouseButton;
 use sdl2::rect::Rect;
-use sdl2::render::WindowCanvas;
+use sdl2::render::Canvas;
+use sdl2::video::Window;
 
 use crate::chess_game::ChessGame;
 use crate::gfx::Widgety;
 
 pub struct EventHandler<'tc, C> {
     chess_game: Rc<RwLock<ChessGame<'tc, C>>>,
-    canvas: Rc<RwLock<WindowCanvas>>,
     widgets: Vec<Box<dyn Widgety>>,
     width: u32,
     height: u32,
@@ -21,25 +21,27 @@ pub struct EventHandler<'tc, C> {
 impl<'tc, C> EventHandler<'tc, C> {
     pub fn new(
         chess_game: Rc<RwLock<ChessGame<'tc, C>>>,
-        canvas: Rc<RwLock<WindowCanvas>>,
         widgets: Vec<Box<dyn Widgety>>,
         width: u32,
         height: u32,
     ) -> Self {
         Self {
             chess_game,
-            canvas,
             widgets,
             width,
             height,
         }
     }
 
-    pub fn handle_event(&mut self, event: &Event) -> Result<(), crate::Error> {
+    pub fn handle_event(
+        &mut self,
+        event: &Event,
+        canvas: &mut Canvas<Window>,
+    ) -> Result<(), crate::Error> {
         match event {
             Event::RenderTargetsReset { .. } => {
                 self.chess_game.write().render_board(
-                    self.canvas.clone(),
+                    canvas,
                     self.width as u32,
                     self.height as u32,
                 )?;
@@ -51,7 +53,7 @@ impl<'tc, C> EventHandler<'tc, C> {
                 self.width = *w as u32;
                 self.height = *h as u32;
                 self.chess_game.write().render_board(
-                    self.canvas.clone(),
+                    canvas,
                     self.width as u32,
                     self.height as u32,
                 )?;
@@ -80,9 +82,9 @@ impl<'tc, C> EventHandler<'tc, C> {
         Ok(())
     }
 
-    pub fn draw_widgets(&self) -> Result<(), crate::Error> {
+    pub fn draw_widgets(&self, canvas: &mut Canvas<Window>) -> Result<(), crate::Error> {
         for widget in &self.widgets {
-            widget.draw(self.canvas.clone())?;
+            widget.draw(canvas)?;
         }
         Ok(())
     }

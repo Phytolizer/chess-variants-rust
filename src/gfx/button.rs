@@ -1,9 +1,6 @@
-use std::rc::Rc;
-
 use super::Widget;
 use super::Widgety;
 
-use parking_lot::RwLock;
 use sdl2::event::Event;
 use sdl2::mouse::MouseButton;
 use sdl2::pixels::Color;
@@ -28,8 +25,7 @@ pub struct Button {
 }
 
 impl Widgety for Button {
-    fn draw(&self, canvas: Rc<RwLock<WindowCanvas>>) -> Result<(), Error> {
-        let mut canvas = canvas.write();
+    fn draw(&self, canvas: &mut WindowCanvas) -> Result<(), Error> {
         canvas.set_draw_color(self.widget.color);
         canvas
             .fill_rect(self.widget.rect)

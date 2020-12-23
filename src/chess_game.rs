@@ -6,12 +6,10 @@ pub(crate) mod piece_catalog;
 mod piece_move;
 pub(crate) mod texture_registry;
 
-use parking_lot::RwLock;
 use sdl2::render::TextureCreator;
 use sdl2::render::WindowCanvas;
 use std::fmt::Display;
 use std::fs;
-use std::rc::Rc;
 
 pub struct ChessGame<'tc, C> {
     pub piece_catalog: piece_catalog::PieceCatalog,
@@ -53,7 +51,7 @@ impl<'tc, C> ChessGame<'tc, C> {
 
     pub fn render_board(
         &mut self,
-        canvas: Rc<RwLock<WindowCanvas>>,
+        canvas: &mut WindowCanvas,
         width: u32,
         height: u32,
     ) -> Result<(), crate::Error> {

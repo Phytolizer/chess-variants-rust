@@ -20,23 +20,21 @@ fn main() {
     let result = (|| -> Result<(), Error> {
         let sdl = sdl2::init().map_err(SdlError::Init)?;
         let video = sdl.video().map_err(SdlError::InitVideo)?;
-        let canvas = Rc::new(RwLock::new(
-            video
-                .window("Test window", 800, 600)
-                .position_centered()
-                .resizable()
-                .build()
-                .map_err(SdlError::CreateWindow)?
-                .into_canvas()
-                .accelerated()
-                .present_vsync()
-                .target_texture()
-                .build()
-                .map_err(SdlError::CreateCanvas)?,
-        ));
-        canvas.write().set_blend_mode(BlendMode::Blend);
+        let mut canvas = video
+            .window("Test window", 800, 600)
+            .position_centered()
+            .resizable()
+            .build()
+            .map_err(SdlError::CreateWindow)?
+            .into_canvas()
+            .accelerated()
+            .present_vsync()
+            .target_texture()
+            .build()
+            .map_err(SdlError::CreateCanvas)?;
+        canvas.set_blend_mode(BlendMode::Blend);
 
-        let texture_creator = canvas.read().texture_creator();
+        let texture_creator = canvas.texture_creator();
 
         let mut event_pump = sdl.event_pump().map_err(SdlError::EventPump)?;
 
@@ -47,7 +45,7 @@ fn main() {
         chess_game.write().load()?;
         chess_game
             .write()
-            .render_board(canvas.clone(), width, height)?;
+            .render_board(&mut canvas, width, height)?;
 
         let mut test_button = Button::new();
         test_button
@@ -62,7 +60,6 @@ fn main() {
         let test_button = test_button.build();
         let mut event_handler = EventHandler::new(
             chess_game.clone(),
-            canvas.clone(),
             vec![Box::new(test_button)],
             width,
             height,
@@ -73,17 +70,17 @@ fn main() {
                 if let Quit { .. } = e {
                     break 'run;
                 }
-                event_handler.handle_event(&e)?;
+                event_handler.handle_event(&e, &mut canvas)?;
             }
 
-            canvas.write().set_draw_color(Color::RGB(0x20, 0x20, 0x20));
-            canvas.write().clear();
+            canvas.set_draw_color(Color::RGB(0x20, 0x20, 0x20));
+            canvas.clear();
             chess_game
                 .read()
                 .textures
-                .render(canvas.clone(), &chess_game.read().board)?;
-            event_handler.draw_widgets()?;
-            canvas.write().present();
+                .render(&mut canvas, &chess_game.read().board)?;
+            event_handler.draw_widgets(&mut canvas)?;
+            canvas.present();
         }
 
         Ok(())

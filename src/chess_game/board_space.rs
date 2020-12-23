@@ -1,9 +1,7 @@
-use std::rc::Rc;
-
-use parking_lot::RwLock;
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
-use sdl2::render::WindowCanvas;
+use sdl2::render::Canvas;
+use sdl2::render::RenderTarget;
 use sdl_helpers::SdlError;
 
 use super::game_piece::GamePiece;
@@ -53,7 +51,7 @@ impl BoardSpace {
         );
     }
 
-    pub fn draw(&self, canvas: Rc<RwLock<WindowCanvas>>) -> Result<(), crate::Error> {
+    pub fn draw(&self, canvas: &mut Canvas<impl RenderTarget>) -> Result<(), crate::Error> {
         let color = if self.available_to_kill {
             Color::RGBA(255, 0, 0, 100)
         } else if self.available_to_move {
@@ -61,11 +59,8 @@ impl BoardSpace {
         } else {
             return Ok(());
         };
-        canvas.write().set_draw_color(color);
-        canvas
-            .write()
-            .fill_rect(self.rect)
-            .map_err(SdlError::Drawing)?;
+        canvas.set_draw_color(color);
+        canvas.fill_rect(self.rect).map_err(SdlError::Drawing)?;
         Ok(())
     }
 }

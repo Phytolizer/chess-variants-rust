@@ -1,15 +1,14 @@
-use parking_lot::RwLock;
 use sdl2::image::LoadTexture;
 use sdl2::rect::Rect;
+use sdl2::render::Canvas;
+use sdl2::render::RenderTarget;
 use sdl2::render::Texture;
 use sdl2::render::TextureCreator;
-use sdl2::render::WindowCanvas;
 use sdl_helpers::SdlError;
 use std::collections::HashMap;
 use std::fmt::Display;
 use std::fs;
 use std::path::PathBuf;
-use std::rc::Rc;
 
 use super::board::Board;
 
@@ -51,10 +50,10 @@ impl<'tc, C> TextureRegistry<'tc, C> {
 
     pub fn render(
         &self,
-        canvas: Rc<RwLock<WindowCanvas>>,
+        canvas: &mut Canvas<impl RenderTarget>,
         board: &Board,
     ) -> Result<(), crate::Error> {
-        board.draw(canvas.clone(), &self.board_texture)?;
+        board.draw(canvas, &self.board_texture)?;
         for game_piece in board.collect_game_pieces() {
             let piece_texture = match self.pieces.get(&game_piece.piece_name) {
                 Some(pt) => pt,
@@ -67,7 +66,6 @@ impl<'tc, C> TextureRegistry<'tc, C> {
                 board.space_size,
             );
             canvas
-                .write()
                 .copy(piece_texture, None, Some(piece_area))
                 .map_err(SdlError::Drawing)?;
         }

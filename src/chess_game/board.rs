@@ -1,16 +1,17 @@
-use parking_lot::RwLock;
 use sdl2::pixels::Color;
 use sdl2::rect::Point;
 use sdl2::rect::Rect;
+use sdl2::render::Canvas;
+use sdl2::render::RenderTarget;
 use sdl2::render::Texture;
 use sdl2::render::TextureCreator;
 use sdl2::render::WindowCanvas;
+use sdl2::video::Window;
 use sdl_helpers::SdlError;
 use std::fs::DirEntry;
 use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
-use std::rc::Rc;
 
 use crate::chess_game::board::move_data::MoveData;
 use crate::chess_game::texture_registry::UninitializedTextureRegistryError;
@@ -268,12 +269,12 @@ impl Board {
 
     pub fn render<'tc, R>(
         &mut self,
-        canvas: Rc<RwLock<WindowCanvas>>,
+        canvas: &mut Canvas<Window>,
         canvas_size: (u32, u32),
         texture_creator: &'tc TextureCreator<R>,
     ) -> Result<Texture<'tc>, crate::Error> {
         let mut board_texture = texture_creator.create_texture_target(
-            canvas.read().default_pixel_format(),
+            canvas.default_pixel_format(),
             self.width,
             self.height,
         )?;
@@ -287,33 +288,30 @@ impl Board {
         for square in self.grid.iter_mut() {
             square.update_rect(self.rect.x, self.rect.y, self.space_size);
         }
-        canvas
-            .write()
-            .with_texture_canvas(&mut board_texture, |c: &mut WindowCanvas| {
-                c.set_draw_color(Color::BLACK);
-                c.clear();
-                for space in &self.grid {
-                    if !space.is_active {
-                        continue;
-                    }
-                    c.set_draw_color(space.color);
-                    c.draw_point(Point::new(
-                        space.horz_position as i32,
-                        space.vert_position as i32,
-                    ))
-                    // FIXME FIXME FIXME
-                    .unwrap();
+        canvas.with_texture_canvas(&mut board_texture, |c: &mut WindowCanvas| {
+            c.set_draw_color(Color::BLACK);
+            c.clear();
+            for space in &self.grid {
+                if !space.is_active {
+                    continue;
                 }
-            })?;
+                c.set_draw_color(space.color);
+                c.draw_point(Point::new(
+                    space.horz_position as i32,
+                    space.vert_position as i32,
+                ))
+                // FIXME FIXME FIXME
+                .unwrap();
+            }
+        })?;
         Ok(board_texture)
     }
     pub fn draw(
         &self,
-        canvas: Rc<RwLock<WindowCanvas>>,
+        canvas: &mut Canvas<impl RenderTarget>,
         texture: &Option<Texture>,
     ) -> Result<(), crate::Error> {
         canvas
-            .write()
             .copy(
                 texture
                     .as_ref()
@@ -323,7 +321,7 @@ impl Board {
             )
             .map_err(SdlError::Drawing)?;
         for space in self.grid.iter() {
-            space.draw(canvas.clone())?;
+            space.draw(canvas)?;
         }
         Ok(())
     }
