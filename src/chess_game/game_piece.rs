@@ -3,6 +3,7 @@ pub struct GamePiece {
     pub team_name: String,
     pub horz_position: u32,
     pub vert_position: u32,
+    pub selected: bool,
 }
 
 impl GamePiece {
@@ -17,6 +18,7 @@ impl GamePiece {
             team_name: team,
             horz_position: horz,
             vert_position: vert,
+            selected: false,
         })
     }
 }

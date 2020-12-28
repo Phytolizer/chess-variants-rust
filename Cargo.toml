@@ -18,6 +18,10 @@ parking_lot = "0.11"
 version = "0.34"
 features = ["image", "ttf", "mixer"]
 
+[dependencies.sdl-helpers]
+git = "https://github.com/onContentStop/sdl-helpers.git"
+version = "0.2.1"
+
 [dev-dependencies]
 expect-test = "1.0"
 textwrap = "0.13"

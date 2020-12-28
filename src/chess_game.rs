@@ -6,14 +6,16 @@ pub(crate) mod piece_catalog;
 mod piece_move;
 pub(crate) mod texture_registry;
 
-use parking_lot::RwLock;
-use sdl2::render::{TextureCreator, WindowCanvas};
-use std::{fmt::Display, fs, rc::Rc};
+use sdl2::render::TextureCreator;
+use sdl2::render::WindowCanvas;
+use std::fmt::Display;
+use std::fs;
 
 pub struct ChessGame<'tc, C> {
     pub piece_catalog: piece_catalog::PieceCatalog,
     pub board: board::Board,
     pub textures: texture_registry::TextureRegistry<'tc, C>,
+    pub texture_creator: &'tc TextureCreator<C>,
 }
 
 impl<'tc, C> ChessGame<'tc, C> {
@@ -22,6 +24,7 @@ impl<'tc, C> ChessGame<'tc, C> {
             piece_catalog: piece_catalog::PieceCatalog::new()?,
             board: board::Board::new()?,
             textures: texture_registry::TextureRegistry::new(texture_creator),
+            texture_creator,
         })
     }
 
@@ -48,12 +51,14 @@ impl<'tc, C> ChessGame<'tc, C> {
 
     pub fn render_board(
         &mut self,
-        canvas: Rc<RwLock<WindowCanvas>>,
+        canvas: &mut WindowCanvas,
         width: u32,
         height: u32,
     ) -> Result<(), crate::Error> {
-        self.textures
-            .render_board(canvas, (width, height), &mut self.board)?;
+        let board_texture = self
+            .board
+            .render(canvas, (width, height), self.texture_creator)?;
+        self.textures.board_texture = Some(board_texture);
         Ok(())
     }
 
@@ -62,7 +67,7 @@ impl<'tc, C> ChessGame<'tc, C> {
     }
 
     pub fn mouse_left_click(&mut self) -> Result<(), crate::Error> {
-        self.board.mouse_left_click()
+        self.board.mouse_left_click(&self.piece_catalog)
     }
 }
 

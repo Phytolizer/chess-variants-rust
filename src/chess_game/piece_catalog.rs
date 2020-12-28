@@ -6,9 +6,10 @@ use std::{
     iter::Peekable,
 };
 
+use super::piece::Piece;
 use super::piece_move::MoveRules;
+use super::piece_move::PieceMove;
 use super::InvalidFormatError;
-use super::{piece::Piece, piece_move::PieceMove};
 
 #[derive(Debug)]
 pub struct PieceCatalog {
@@ -301,7 +302,6 @@ impl PieceCatalog {
             statements.push(Self::piece_statement(&mut tokens)?);
         }
         let mut piece = Piece::new();
-        dbg!(&statements);
         for statement in statements {
             match statement {
                 PieceStatement::Name { name } => piece.name = name,

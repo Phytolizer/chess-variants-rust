@@ -36,4 +36,16 @@ impl PieceMove {
             rules,
         }
     }
+
+    pub fn forward(&self) -> i32 {
+        self.forward
+    }
+
+    pub fn left(&self) -> i32 {
+        self.left
+    }
+
+    pub fn movement_type(&self) -> &MoveRules {
+        &self.rules
+    }
 }
